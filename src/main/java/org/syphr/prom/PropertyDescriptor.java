@@ -30,7 +30,7 @@ public interface PropertyDescriptor
      * defaults are stored in a separate file.
      *
      * @return the default value of this property or <code>null</code> if defaults are
-     *         stored in a seprate file
+     *         stored in a separate file
      */
     public String getDefaultValue();
 }
