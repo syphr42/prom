@@ -34,6 +34,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -134,6 +135,23 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
      * @see #setComment(String)
      */
     private String comment;
+    
+    /**
+     * Construct a new manager for the given properties file.
+     *
+     * @param file
+     *            the file system location of the properties represented here
+     * @param descriptorType
+     *            the enumeration of keys in the properties file
+     */
+    public PropertiesManager(File file, Class<T> descriptorType)
+    {
+        this(file,
+             descriptorType,
+             PropertyDescriptorUtils.getDefaultTranslator(descriptorType),
+             new DefaultEvaluator(),
+             Executors.newCachedThreadPool());
+    }
 
     /**
      * Construct a new manager for the given properties file.
@@ -309,8 +327,7 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
      */
     public File getDefaultFile()
     {
-        // TODO maybe this should be user-configurable? if the API changes, that could
-        // mess up established client code
+        // TODO this should be user-defined
         return new File(file.getParentFile(), DEFAULT_PREFIX + file.getName());
     }
 
