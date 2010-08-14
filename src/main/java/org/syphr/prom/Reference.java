@@ -21,8 +21,8 @@ import java.util.List;
 
 /**
  * This class encapsulates a reference to another property from within a property's value.
- * For example, using an Ant-like {@link Evaluator}, a property may have the value "
- * <code>some.property = some value ${nested}</code>" where "<code>${nested}</code>" is
+ * For example, using an Ant-like {@link Evaluator}, a property may look like 
+ * <code>some.property = some value ${nested}</code> where <code>${nested}</code> is
  * the reference.
  *
  * @author Gregory P. Moyer

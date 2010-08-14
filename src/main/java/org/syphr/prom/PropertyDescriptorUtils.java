@@ -18,7 +18,7 @@ package org.syphr.prom;
 import java.util.Properties;
 
 /**
- * This class provides a set of utilities for iteracting with the
+ * This class provides a set of utilities for interacting with the
  * {@link PropertyDescriptor} Enums. Most client code should not need this utilities,
  * except for {@link #getPropertyName(Enum)} which most {@link PropertyDescriptor}
  * implementations will use to delegate {@link PropertyDescriptor#getPropertyName()}.
