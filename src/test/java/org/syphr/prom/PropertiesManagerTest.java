@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.EnumSet;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,6 +49,7 @@ public class PropertiesManagerTest
     private static String BASE_PROPS_2_RESOURCE_PATH = "/test.base.2.properties";
     private static String BASE_PROPS_2_DEFAULT_RESOURCE_PATH = "/default.test.base.2.properties";
 
+    private static Translator<Key1> TRANSLATOR1;
     private static ExecutorService EXECUTOR;
 
     private static Properties test2DefaultProperties;
@@ -90,6 +92,22 @@ public class PropertiesManagerTest
 
         baseIn2Default.close();
         baseOut2Default.close();
+        
+        TRANSLATOR1 = new Translator<Key1>()
+        {
+            @Override
+            public String getPropertyName(Key1 propertyKey)
+            {
+                return propertyKey.name().toLowerCase().replace('_', '-');
+            }
+
+            @Override
+            public Key1 getPropertyKey(String propertyName)
+            {
+                String enumName = propertyName.toUpperCase().replace('-', '_');
+                return Key1.valueOf(enumName);
+            }
+        };
 
         EXECUTOR = Executors.newCachedThreadPool();
     }
@@ -107,24 +125,7 @@ public class PropertiesManagerTest
     @Before
     public void setUp() throws Exception
     {
-        Translator<Key1> translator = new Translator<Key1>()
-        {
-            @Override
-            public String getPropertyName(Key1 propertyKey)
-            {
-                return propertyKey.name().toLowerCase().replace('_', '-');
-            }
-
-            @Override
-            public Key1 getPropertyKey(String propertyName)
-            {
-                String enumName = propertyName.toUpperCase().replace('-', '_');
-                return Key1.valueOf(enumName);
-            }
-        };
-
-        test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, translator, EXECUTOR);
-
+        test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, TRANSLATOR1, EXECUTOR);
         test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, TEST_PROPS_2_DEFAULT, Key2.class, EXECUTOR);
     }
 
@@ -200,6 +201,14 @@ public class PropertiesManagerTest
                           trimmed.equals(notTrimmed.trim()));
 
         test2Manager.setAutoTrim(prevAutoTrimValue);
+    }
+    
+    @Test
+    public void testKeySet()
+    {
+        Assert.assertTrue("Default keys were not discovered properly",
+                          test2Manager.keySet()
+                                      .containsAll(EnumSet.allOf(Key2.class)));
     }
 
     public static enum Key1 implements Defaultable
