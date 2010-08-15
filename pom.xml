@@ -37,6 +37,10 @@
   		</roles>
   	</developer>
   </developers>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
   <scm>
     <connection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</connection>
     <url>http://code.launchpad.net/prom</url>
@@ -84,6 +88,16 @@
   				</execution>
   			</executions>
   		</plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <configuration>
+            <descriptors>
+              <descriptor>src/main/assembly/bin.xml</descriptor>
+              <descriptor>src/main/assembly/src.xml</descriptor>
+            </descriptors>
+            <tarLongFileMode>gnu</tarLongFileMode>
+          </configuration>
+        </plugin>
   	</plugins>
   	<sourceDirectory>src/main/java</sourceDirectory>
   	<testSourceDirectory>src/test/java</testSourceDirectory>
