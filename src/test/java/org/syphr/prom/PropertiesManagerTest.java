@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.syphr.prom.PropertiesManager;
-import org.syphr.prom.PropertyDescriptor;
+import org.syphr.prom.Defaultable;
 import org.syphr.prom.Translator;
 
 public class PropertiesManagerTest
@@ -116,7 +116,7 @@ public class PropertiesManagerTest
             }
 
             @Override
-            public Key1 getPropertyDescriptor(String propertyName)
+            public Key1 getPropertyKey(String propertyName)
             {
                 String enumName = propertyName.toUpperCase().replace('-', '_');
                 return Key1.valueOf(enumName);
@@ -202,7 +202,7 @@ public class PropertiesManagerTest
         test2Manager.setAutoTrim(prevAutoTrimValue);
     }
 
-    public static enum Key1 implements PropertyDescriptor
+    public static enum Key1 implements Defaultable
     {
         ;
 
@@ -220,7 +220,7 @@ public class PropertiesManagerTest
         }
     }
 
-    public static enum Key2 implements PropertyDescriptor
+    public static enum Key2 implements Defaultable
     {
         VALUE_BOOLEAN,
         VALUE_INT,

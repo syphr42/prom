@@ -16,21 +16,16 @@
 package org.syphr.prom;
 
 /**
- * This interface defines added functionality required of Enums to be used with the
- * {@link PropertiesManager}.
- *
+ * This interface defines functionality to provide a default property value.
+ * 
  * @author Gregory P. Moyer
  */
-public interface PropertyDescriptor
+public interface Defaultable
 {
     /**
-     * This method is not meant to be used directly by client code. The API provided by
-     * {@link PropertiesManager} and {@link ManagedProperty} will determine where to find
-     * the default value when necessary. This value may be <code>null</code> if the
-     * defaults are stored in a separate file.
-     *
-     * @return the default value of this property or <code>null</code> if defaults are
-     *         stored in a separate file
+     * Retrieve the default value for key instance.
+     * 
+     * @return the default value of this property
      */
     public String getDefaultValue();
 }

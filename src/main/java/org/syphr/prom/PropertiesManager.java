@@ -91,7 +91,7 @@ public class PropertiesManager<T extends Enum<T>>
      * The enumeration of keys in this properties file.
      */
     // TODO might be able to ditch this - need to make sure inferred types will work correctly
-    private final Class<T> descriptorType;
+    private final Class<T> keyType;
 
     /**
      * The object that determines how to translate between Enum names and property keys.
@@ -137,7 +137,7 @@ public class PropertiesManager<T extends Enum<T>>
      *            the file system location of the properties represented here
      * @param defaults
      *            default values for the properties represented here
-     * @param descriptorType
+     * @param keyType
      *            the enumeration of keys in the properties file
      * @param translator
      *            the translator to convert between Enum names and property keys
@@ -150,7 +150,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public PropertiesManager(File file,
                              Properties defaults,
-                             Class<T> descriptorType,
+                             Class<T> keyType,
                              Translator<T> translator,
                              Evaluator evaluator,
                              ExecutorService executor)
@@ -158,7 +158,7 @@ public class PropertiesManager<T extends Enum<T>>
         logger = Logger.getLogger(PropertiesManager.class.getPackage().getName());
 
         this.file = file;
-        this.descriptorType = descriptorType;
+        this.keyType = keyType;
         this.translator = translator;
         this.evaluator = evaluator;
         this.executor = executor;
@@ -383,7 +383,7 @@ public class PropertiesManager<T extends Enum<T>>
             {
                 try
                 {
-                    keys.add(getTranslator().getPropertyDescriptor(keyObj.toString()));
+                    keys.add(getTranslator().getPropertyKey(keyObj.toString()));
                 }
                 catch (IllegalArgumentException e)
                 {

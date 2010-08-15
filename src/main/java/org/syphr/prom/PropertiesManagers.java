@@ -43,7 +43,7 @@ public class PropertiesManagers
      * @param defaultFile
      *            a file containing default values for the properties
      *            represented by the new manager
-     * @param descriptorType
+     * @param keyType
      *            the enumeration of keys in the properties file
      * @return a new manager
      * @throws IOException
@@ -51,16 +51,16 @@ public class PropertiesManagers
      */
     public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
                                                                       File defaultFile,
-                                                                      Class<T> descriptorType) throws IOException
+                                                                      Class<T> keyType) throws IOException
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        descriptorType,
-                                        PropertyDescriptorUtils.getDefaultTranslator(descriptorType),
+                                        keyType,
+                                        getDefaultTranslator(keyType),
                                         new DefaultEvaluator(),
                                         Executors.newCachedThreadPool());
     }
-    
+
     /**
      * Build a new manager for the given properties file.
      * 
@@ -73,7 +73,7 @@ public class PropertiesManagers
      * @param defaultFile
      *            a file containing default values for the properties
      *            represented by the new manager
-     * @param descriptorType
+     * @param keyType
      *            the enumeration of keys in the properties file
      * @param executor
      *            a service to handle potentially long running tasks, such as
@@ -84,13 +84,13 @@ public class PropertiesManagers
      */
     public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
                                                                       File defaultFile,
-                                                                      Class<T> descriptorType,
+                                                                      Class<T> keyType,
                                                                       ExecutorService executor) throws IOException
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        descriptorType,
-                                        PropertyDescriptorUtils.getDefaultTranslator(descriptorType),
+                                        keyType,
+                                        getDefaultTranslator(keyType),
                                         new DefaultEvaluator(),
                                         executor);
     }
@@ -103,19 +103,19 @@ public class PropertiesManagers
      * 
      * @param file
      *            the file system location of the properties represented here
-     * @param descriptorType
+     * @param keyType
      *            the enumeration of keys in the properties file
      * @return a new manager
      */
-    public static <T extends Enum<T> & PropertyDescriptor> PropertiesManager<T> newManager(File file,
-                                                                                           Class<T> descriptorType)
+    public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
+                                                                                    Class<T> keyType)
     {
-        Translator<T> translator = PropertyDescriptorUtils.getDefaultTranslator(descriptorType);
+        Translator<T> translator = getDefaultTranslator(keyType);
 
         return new PropertiesManager<T>(file,
-                                        PropertyDescriptorUtils.getDefaultProperties(descriptorType,
-                                                                                     translator),
-                                        descriptorType,
+                                        getDefaultProperties(keyType,
+                                                             translator),
+                                        keyType,
                                         translator,
                                         new DefaultEvaluator(),
                                         Executors.newCachedThreadPool());
@@ -129,23 +129,23 @@ public class PropertiesManagers
      * 
      * @param file
      *            the file system location of the properties represented here
-     * @param descriptorType
+     * @param keyType
      *            the enumeration of keys in the properties file
      * @param executor
      *            a service to handle potentially long running tasks, such as
      *            interacting with the file system
      * @return a new manager
      */
-    public static <T extends Enum<T> & PropertyDescriptor> PropertiesManager<T> newManager(File file,
-                                                                                           Class<T> descriptorType,
-                                                                                           ExecutorService executor)
+    public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
+                                                                                    Class<T> keyType,
+                                                                                    ExecutorService executor)
     {
-        Translator<T> translator = PropertyDescriptorUtils.getDefaultTranslator(descriptorType);
+        Translator<T> translator = getDefaultTranslator(keyType);
 
         return new PropertiesManager<T>(file,
-                                        PropertyDescriptorUtils.getDefaultProperties(descriptorType,
-                                                                                     translator),
-                                        descriptorType,
+                                        getDefaultProperties(keyType,
+                                                             translator),
+                                        keyType,
                                         translator,
                                         new DefaultEvaluator(),
                                         executor);
@@ -159,7 +159,7 @@ public class PropertiesManagers
      * 
      * @param file
      *            the file system location of the properties represented here
-     * @param descriptorType
+     * @param keyType
      *            the enumeration of keys in the properties file
      * @param translator
      *            the translator to convert between Enum names and property keys
@@ -168,15 +168,15 @@ public class PropertiesManagers
      *            interacting with the file system
      * @return a new manager
      */
-    public static <T extends Enum<T> & PropertyDescriptor> PropertiesManager<T> newManager(File file,
-                                                                                           Class<T> descriptorType,
-                                                                                           Translator<T> translator,
-                                                                                           ExecutorService executor)
+    public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
+                                                                                    Class<T> keyType,
+                                                                                    Translator<T> translator,
+                                                                                    ExecutorService executor)
     {
         return new PropertiesManager<T>(file,
-                                        PropertyDescriptorUtils.getDefaultProperties(descriptorType,
-                                                                                     translator),
-                                        descriptorType,
+                                        getDefaultProperties(keyType,
+                                                             translator),
+                                        keyType,
                                         translator,
                                         new DefaultEvaluator(),
                                         executor);
@@ -190,7 +190,7 @@ public class PropertiesManagers
      * 
      * @param file
      *            the file system location of the properties represented here
-     * @param descriptorType
+     * @param keyType
      *            the enumeration of keys in the properties file
      * @param evaluator
      *            the evaluator to convert nested property references into fully
@@ -200,18 +200,18 @@ public class PropertiesManagers
      *            interacting with the file system
      * @return a new manager
      */
-    public static <T extends Enum<T> & PropertyDescriptor> PropertiesManager<T> newManager(File file,
-                                                                                           Class<T> descriptorType,
-                                                                                           Evaluator evaluator,
-                                                                                           ExecutorService executor)
+    public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
+                                                                                    Class<T> keyType,
+                                                                                    Evaluator evaluator,
+                                                                                    ExecutorService executor)
     {
-        Translator<T> translator = PropertyDescriptorUtils.getDefaultTranslator(descriptorType);
+        Translator<T> translator = getDefaultTranslator(keyType);
 
         return new PropertiesManager<T>(file,
-                                        PropertyDescriptorUtils.getDefaultProperties(descriptorType,
-                                                                                     translator),
-                                        descriptorType,
-                                        PropertyDescriptorUtils.getDefaultTranslator(descriptorType),
+                                        getDefaultProperties(keyType,
+                                                             translator),
+                                        keyType,
+                                        getDefaultTranslator(keyType),
                                         evaluator,
                                         executor);
     }
@@ -240,6 +240,63 @@ public class PropertiesManagers
         }
 
         return properties;
+    }
+
+    /**
+     * Retrieve a {@link Properties} instance that contains all of the default
+     * values defined for the given {@link Defaultable}.
+     * 
+     * @param <T>
+     *            the key type whose default values are requested
+     * @param keyType
+     *            the class that contains the appropriate defaults
+     * @param translator
+     *            a translator to convert between key instances and property
+     *            names
+     * @return a {@link Properties} instance containing the default values
+     *         stored in the given key type
+     */
+    public static <T extends Enum<T> & Defaultable> Properties getDefaultProperties(Class<T> keyType,
+                                                                                    Translator<T> translator)
+    {
+        Properties defaults = new Properties();
+
+        for (T key : keyType.getEnumConstants())
+        {
+            defaults.setProperty(translator.getPropertyName(key),
+                                 key.getDefaultValue());
+        }
+
+        return defaults;
+    }
+
+    /**
+     * Get the default translator to convert back and forth between Enums and
+     * property names (keys).
+     * 
+     * @param <T>
+     *            the type of Enum representing the properties
+     * @param enumType
+     *            the Enum class used to represent the properties
+     * @return the default translator implementation
+     */
+    public static <T extends Enum<T>> Translator<T> getDefaultTranslator(final Class<T> enumType)
+    {
+        return new Translator<T>()
+        {
+            @Override
+            public String getPropertyName(T propertyKey)
+            {
+                return propertyKey.name().toLowerCase().replace('_', '.');
+            }
+
+            @Override
+            public T getPropertyKey(String propertyName)
+            {
+                String enumName = propertyName.toUpperCase().replace('.', '_');
+                return Enum.valueOf(enumType, enumName);
+            }
+        };
     }
 
     /**

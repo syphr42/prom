@@ -26,7 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * {@link PropertiesManager#getManagedProperty(Enum)}.
  *
  * @param <T>
- *            the property descriptor type
+ *            the property key type
  *
  * @author Gregory P. Moyer
  */

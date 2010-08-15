@@ -16,42 +16,41 @@
 package org.syphr.prom;
 
 /**
- * This interface defines the functionality required to translate back and forth between
- * {@link PropertyDescriptor descriptors} and property names (keys).<br>
+ * This interface defines the functionality required to translate back and forth
+ * between key constants (Enums) and property names.<br>
  * <br>
  * It is required that any implementation be thread safe.
- *
- * @see PropertyDescriptorUtils#getDefaultTranslator(Class)
- *
+ * 
  * @param <T>
- *            the type of Enums used to defined the property keys
- *
+ *            the type of Enums used to defined the properties
+ * 
  * @author Gregory P. Moyer
  */
 public interface Translator<T extends Enum<T>>
 {
     /**
-     * This method translates the Enum into a string property name (key) that is used in
-     * the properties file. There is not likely to be a need for client code to call this
-     * method directly. The {@link PropertiesManager} API will take care of reading and
-     * writing the actual file.
-     *
-     * @param propertyDescriptor
-     *            the Enum to be translated into a property name (key)
-     *
-     * @return the key value that represents this property in the properties file
+     * This method translates the Enum key into a string property name that is
+     * used in the properties file. There is not likely to be a need for client
+     * code to call this method directly. The {@link PropertiesManager} API will
+     * take care of reading and writing the actual file.
+     * 
+     * @param propertyKey
+     *            the Enum key to be translated into a property name
+     * 
+     * @return the name that represents this property in the properties file
      */
-    public String getPropertyName(T propertyDescriptor);
+    public String getPropertyName(T propertyKey);
 
     /**
-     * This method translates the string property name (key) into an Enum that is used to
-     * reference the property via the properties management API. There is not likely to be
-     * a need for client code to call this method directly. The {@link PropertiesManager}
-     * API will take care of reading and writing the actual file.
-     *
+     * This method translates the string property name into an Enum key that is
+     * used to reference the property via the properties management API. There
+     * is not likely to be a need for client code to call this method directly.
+     * The {@link PropertiesManager} API will take care of reading and writing
+     * the actual file.
+     * 
      * @param propertyName
-     *            the property name (key) to be translated into an Enum constant
-     * @return the associated Enum constant
+     *            the property name to be translated into an Enum key constant
+     * @return the associated Enum key constant
      */
-    public T getPropertyDescriptor(String propertyName);
+    public T getPropertyKey(String propertyName);
 }
