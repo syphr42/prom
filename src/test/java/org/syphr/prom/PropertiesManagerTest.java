@@ -125,7 +125,7 @@ public class PropertiesManagerTest
 
         test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, translator, EXECUTOR);
 
-        test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, Key2.class, EXECUTOR);
+        test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, TEST_PROPS_2_DEFAULT, Key2.class, EXECUTOR);
     }
 
     @Test

@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,13 +46,8 @@ import java.util.logging.Logger;
  *
  * @author Gregory P. Moyer
  */
-public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
+public class PropertiesManager<T extends Enum<T>>
 {
-    /**
-     * The name to prepend to the main properties file to find the default version.
-     */
-    private static final String DEFAULT_PREFIX = "default.";
-
     /**
      * Listeners that are waiting for property events, such as loading or saving the file.
      */
@@ -96,6 +90,7 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
     /**
      * The enumeration of keys in this properties file.
      */
+    // TODO might be able to ditch this - need to make sure inferred types will work correctly
     private final Class<T> descriptorType;
 
     /**
@@ -137,21 +132,24 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
 
     /**
      * Construct a new manager for the given properties file.
-     *
+     * 
      * @param file
      *            the file system location of the properties represented here
+     * @param defaults
+     *            default values for the properties represented here
      * @param descriptorType
      *            the enumeration of keys in the properties file
      * @param translator
      *            the translator to convert between Enum names and property keys
      * @param evaluator
-     *            the evaluator to convert nested property references into fully evaluated
-     *            strings
+     *            the evaluator to convert nested property references into fully
+     *            evaluated strings
      * @param executor
-     *            a service to handle potentially long running tasks, such as interacting
-     *            with the file system
+     *            a service to handle potentially long running tasks, such as
+     *            interacting with the file system
      */
     public PropertiesManager(File file,
+                             Properties defaults,
                              Class<T> descriptorType,
                              Translator<T> translator,
                              Evaluator evaluator,
@@ -165,7 +163,27 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
         this.evaluator = evaluator;
         this.executor = executor;
 
-        properties = new ManagedProperties();
+        properties = new ManagedProperties(copyProperties(defaults));
+    }
+    
+    /**
+     * Copy the given properties to a new object.
+     * 
+     * @param source
+     *            the source from which to copy
+     * @return a copy of the source or <code>null</code> if the source is
+     *         <code>null</code>
+     */
+    private Properties copyProperties(Properties source)
+    {
+        Properties copy = new Properties();
+
+        if (source != null)
+        {
+            copy.putAll(source);
+        }
+
+        return copy;
     }
 
     /**
@@ -235,15 +253,6 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
     public File getFile()
     {
         return file;
-    }
-
-    /**
-     * @return the default properties file
-     */
-    public File getDefaultFile()
-    {
-        // TODO this should be user-defined
-        return new File(file.getParentFile(), DEFAULT_PREFIX + file.getName());
     }
 
     /**
@@ -587,7 +596,7 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
             value = properties.getProperty(propertyName);
         }
 
-        if (isAutoTrim())
+        if (value != null && isAutoTrim())
         {
             value = value.trim();
         }
@@ -750,7 +759,7 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
                     }
 
                     properties.clear();
-                    properties.load(getFile(), getDefaultFile(), descriptorType, getTranslator());
+                    properties.load(getFile());
                 }
 
                 if (notifyListeners)
@@ -1221,10 +1230,13 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
 
         /**
          * Construct a new managed instance.
+         * 
+         * @param defaults
+         *            the default values
          */
-        public ManagedProperties()
+        public ManagedProperties(Properties defaults)
         {
-            super(new Properties());
+            super(defaults);
         }
 
         /**
@@ -1255,46 +1267,16 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
         }
 
         /**
-         * Load the given file and the corresponding defaults, which can come from another
-         * file or an enumeration of {@link PropertyDescriptor descriptors}.
-         *
-         * @param <T>
-         *            the type of the Enum representing the property keys
+         * Load the given file.
+         * 
          * @param file
          *            the file containing the current property values
-         * @param defaultsFile
-         *            a file containing all possible default values (this does not have to
-         *            exist, but in that case defaults must be defined in the
-         *            {@link PropertyDescriptor})
-         * @param type
-         *            the Enum class representing the property keys (this must define
-         *            default values if there is no file containing defaults)
-         * @param translator
-         *            a tool to translate between Enum constants and property names (keys)
          * @throws IOException
-         *             if there is a file system error while attempting to read the main
-         *             file or the default file
+         *             if there is a file system error while attempting to read
+         *             the file
          */
-        public synchronized <T extends Enum<T> & PropertyDescriptor> void load(File file,
-                                                                               File defaultsFile,
-                                                                               Class<T> type,
-                                                                               Translator<T> translator) throws IOException
+        public synchronized void load(File file) throws IOException
         {
-            /*
-             * Load the defaults from file, if it exists, otherwise from the enum itself.
-             */
-            if (defaultsFile.isFile())
-            {
-                loadDefaults(defaultsFile);
-            }
-            else
-            {
-                loadDefaults(type, translator);
-            }
-
-            /*
-             * Load the user file if it exists.
-             */
             if (file.isFile())
             {
                 InputStream inputStream = new FileInputStream(file);
@@ -1309,60 +1291,6 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
             }
 
             initiated = true;
-        }
-
-        @Override
-        public synchronized void load(InputStream inStream) throws IOException
-        {
-            super.load(inStream);
-            initiated = true;
-        }
-
-        @Override
-        public synchronized void load(Reader reader) throws IOException
-        {
-            super.load(reader);
-            initiated = true;
-        }
-
-        /**
-         * Load default values from a file.
-         *
-         * @param file
-         *            the file containing default values
-         * @throws IOException
-         *             if there is an error while reading the given file
-         */
-        private synchronized void loadDefaults(File file) throws IOException
-        {
-            defaults.clear();
-
-            InputStream inputStream = new FileInputStream(file);
-            try
-            {
-                defaults.load(inputStream);
-            }
-            finally
-            {
-                inputStream.close();
-            }
-        }
-
-        /**
-         * Load default values from {@link PropertyDescriptor descriptors}.
-         *
-         * @param <T>
-         *            the type of Enum used to represent property names (keys)
-         * @param type
-         *            the class of Enum used to represent property names (keys)
-         * @param translator
-         *            the translator that can convert between Enum and property name (key)
-         */
-        private synchronized <T extends Enum<T> & PropertyDescriptor> void loadDefaults(Class<T> type,
-                                                                                        Translator<T> translator)
-        {
-            defaults.clear();
-            defaults.putAll(PropertyDescriptorUtils.getDefaultProperties(type, translator));
         }
 
         /**
@@ -1424,9 +1352,7 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
         @Override
         public synchronized void clear()
         {
-            defaults.clear();
             super.clear();
-
             initiated = false;
         }
 

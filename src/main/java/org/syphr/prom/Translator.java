@@ -28,7 +28,7 @@ package org.syphr.prom;
  *
  * @author Gregory P. Moyer
  */
-public interface Translator<T extends Enum<T> & PropertyDescriptor>
+public interface Translator<T extends Enum<T>>
 {
     /**
      * This method translates the Enum into a string property name (key) that is used in

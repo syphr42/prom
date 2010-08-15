@@ -42,8 +42,8 @@ public class PropertyDescriptorUtils
      * @throws NullPointerException
      *             if the property is <code>null</code>
      */
-    public static <T extends Enum<T> & PropertyDescriptor> T getPropertyDescriptor(Class<T> enumType,
-                                                                                   String property)
+    public static <T extends Enum<T>> T getPropertyDescriptor(Class<T> enumType,
+                                                              String property)
     {
         String enumName = property.toUpperCase().replace('.', '_');
         return Enum.valueOf(enumType, enumName);
@@ -58,7 +58,7 @@ public class PropertyDescriptorUtils
      *            the Enum instance to convert
      * @return a property name (key) that represents the given Enum instance
      */
-    public static <T extends Enum<T> & PropertyDescriptor> String getPropertyName(T descriptor)
+    public static <T extends Enum<T>> String getPropertyName(T descriptor)
     {
         return descriptor.name().toLowerCase().replace('_', '.');
     }
@@ -106,7 +106,7 @@ public class PropertyDescriptorUtils
      *            the Enum class used to represent the properties
      * @return the default translator implementation
      */
-    public static <T extends Enum<T> & PropertyDescriptor> Translator<T> getDefaultTranslator(final Class<T> enumType)
+    public static <T extends Enum<T>> Translator<T> getDefaultTranslator(final Class<T> enumType)
     {
         return new Translator<T>()
         {

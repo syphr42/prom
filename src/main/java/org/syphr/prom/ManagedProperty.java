@@ -30,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  *
  * @author Gregory P. Moyer
  */
-public class ManagedProperty<T extends Enum<T> & PropertyDescriptor>
+public class ManagedProperty<T extends Enum<T>>
 {
     /**
      * Listeners that are waiting for notifications specific to the property managed by

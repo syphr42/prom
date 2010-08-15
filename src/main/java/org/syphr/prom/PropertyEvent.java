@@ -26,7 +26,7 @@ import java.util.EventObject;
  *
  * @author Gregory P. Moyer
  */
-public class PropertyEvent<T extends Enum<T> & PropertyDescriptor> extends EventObject
+public class PropertyEvent<T extends Enum<T>> extends EventObject
 {
     /**
      * Serialization ID
