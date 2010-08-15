@@ -16,6 +16,7 @@
 package org.syphr.prom;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -42,6 +43,11 @@ public class DefaultEvaluator implements Evaluator
     @Override
     public String evaluate(String rawValue, Retriever retriever)
     {
+        if (rawValue == null)
+        {
+            return null;
+        }
+        
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
@@ -51,6 +57,11 @@ public class DefaultEvaluator implements Evaluator
     @Override
     public Reference referenceAt(String rawValue, int position, Retriever retriever)
     {
+        if (rawValue == null)
+        {
+            return null;
+        }
+        
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
@@ -60,6 +71,11 @@ public class DefaultEvaluator implements Evaluator
     @Override
     public boolean isReferencing(String rawValue, String name, Retriever retriever)
     {
+        if (rawValue == null)
+        {
+            return false;
+        }
+        
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
@@ -79,6 +95,11 @@ public class DefaultEvaluator implements Evaluator
     @Override
     public List<Reference> getReferences(String rawValue, Retriever retriever)
     {
+        if (rawValue == null)
+        {
+            return Collections.emptyList();
+        }
+        
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
