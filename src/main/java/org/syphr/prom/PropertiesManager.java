@@ -88,12 +88,6 @@ public class PropertiesManager<T extends Enum<T>>
     private final File file;
 
     /**
-     * The enumeration of keys in this properties file.
-     */
-    // TODO might be able to ditch this - need to make sure inferred types will work correctly
-    private final Class<T> keyType;
-
-    /**
      * The object that determines how to translate between Enum names and property keys.
      */
     private final Translator<T> translator;
@@ -137,8 +131,6 @@ public class PropertiesManager<T extends Enum<T>>
      *            the file system location of the properties represented here
      * @param defaults
      *            default values for the properties represented here
-     * @param keyType
-     *            the enumeration of keys in the properties file
      * @param translator
      *            the translator to convert between Enum names and property keys
      * @param evaluator
@@ -150,7 +142,6 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public PropertiesManager(File file,
                              Properties defaults,
-                             Class<T> keyType,
                              Translator<T> translator,
                              Evaluator evaluator,
                              ExecutorService executor)
@@ -158,7 +149,6 @@ public class PropertiesManager<T extends Enum<T>>
         logger = Logger.getLogger(PropertiesManager.class.getPackage().getName());
 
         this.file = file;
-        this.keyType = keyType;
         this.translator = translator;
         this.evaluator = evaluator;
         this.executor = executor;

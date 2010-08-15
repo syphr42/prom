@@ -55,7 +55,6 @@ public class PropertiesManagers
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        keyType,
                                         getDefaultTranslator(keyType),
                                         new DefaultEvaluator(),
                                         Executors.newCachedThreadPool());
@@ -89,7 +88,6 @@ public class PropertiesManagers
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        keyType,
                                         getDefaultTranslator(keyType),
                                         new DefaultEvaluator(),
                                         executor);
@@ -115,7 +113,6 @@ public class PropertiesManagers
         return new PropertiesManager<T>(file,
                                         getDefaultProperties(keyType,
                                                              translator),
-                                        keyType,
                                         translator,
                                         new DefaultEvaluator(),
                                         Executors.newCachedThreadPool());
@@ -145,7 +142,6 @@ public class PropertiesManagers
         return new PropertiesManager<T>(file,
                                         getDefaultProperties(keyType,
                                                              translator),
-                                        keyType,
                                         translator,
                                         new DefaultEvaluator(),
                                         executor);
@@ -176,7 +172,6 @@ public class PropertiesManagers
         return new PropertiesManager<T>(file,
                                         getDefaultProperties(keyType,
                                                              translator),
-                                        keyType,
                                         translator,
                                         new DefaultEvaluator(),
                                         executor);
@@ -210,7 +205,6 @@ public class PropertiesManagers
         return new PropertiesManager<T>(file,
                                         getDefaultProperties(keyType,
                                                              translator),
-                                        keyType,
                                         getDefaultTranslator(keyType),
                                         evaluator,
                                         executor);
