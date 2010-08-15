@@ -110,9 +110,9 @@ public class PropertiesManagerTest
         Translator<Key1> translator = new Translator<Key1>()
         {
             @Override
-            public String getPropertyName(Key1 propertyDescriptor)
+            public String getPropertyName(Key1 propertyKey)
             {
-                return propertyDescriptor.name().toLowerCase().replace('_', '-');
+                return propertyKey.name().toLowerCase().replace('_', '-');
             }
 
             @Override
@@ -220,7 +220,7 @@ public class PropertiesManagerTest
         }
     }
 
-    public static enum Key2 implements Defaultable
+    public static enum Key2
     {
         VALUE_BOOLEAN,
         VALUE_INT,
@@ -231,15 +231,6 @@ public class PropertiesManagerTest
         VALUE_STRING,
         VALUE_STRING_TRIM,
         VALUE_NESTED;
-
-        @Override
-        public String getDefaultValue()
-        {
-            /*
-             * Defaults for this key type are stored in an external file.
-             */
-            return null;
-        }
     }
 
     public static enum Color
