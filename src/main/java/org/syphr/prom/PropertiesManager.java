@@ -258,15 +258,18 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
      */
     public ManagedProperty<T> getManagedProperty(T property)
     {
-        ManagedProperty<T> managedProperty = managedPropertyCache.get(property);
-
-        if (managedProperty == null)
+        synchronized (managedPropertyCache)
         {
-            managedProperty = new ManagedProperty<T>(property, this);
-            managedPropertyCache.put(property, managedProperty);
-        }
+            ManagedProperty<T> managedProperty = managedPropertyCache.get(property);
 
-        return managedProperty;
+            if (managedProperty == null)
+            {
+                managedProperty = new ManagedProperty<T>(property, this);
+                managedPropertyCache.put(property, managedProperty);
+            }
+
+            return managedProperty;
+        }
     }
 
     /**
