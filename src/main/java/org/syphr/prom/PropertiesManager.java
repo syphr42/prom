@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -342,7 +341,7 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Retrieve the set of keys currently in use by this manager. This encompasses and key
+     * Retrieve the set of keys currently in use by this manager. This encompasses any key
      * which currently has a value or a default value associated with it. Normally, this
      * should have the same contents as {@link EnumSet#allOf(Class)}, but it is not
      * guaranteed.<br>
@@ -369,11 +368,11 @@ public class PropertiesManager<T extends Enum<T>>
 
         synchronized (properties)
         {
-            for (Object keyObj : properties.combinedKeySet())
+            for (String propertyName : properties.stringPropertyNames())
             {
                 try
                 {
-                    keys.add(getTranslator().getPropertyKey(keyObj.toString()));
+                    keys.add(getTranslator().getPropertyKey(propertyName));
                 }
                 catch (IllegalArgumentException e)
                 {
@@ -743,7 +742,8 @@ public class PropertiesManager<T extends Enum<T>>
             {
                 synchronized (properties)
                 {
-                    if (!reload && properties.isInitiated())
+                    if (!reload
+                        && !Status.UNINITIALIZED.equals(properties.getStatus()))
                     {
                         return null;
                     }
@@ -1085,30 +1085,47 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Load the properties file if it is not currently loaded. If the file has already
-     * been loaded, this will be a no-op.
-     *
+     * Load the properties file if it is not currently loaded. If the file has
+     * already been loaded, this will be a no-op.<br>
+     * <br>
+     * If an attempt has already been made to load the properties file and it
+     * failed, this method will always throw an exception. To clear the failed
+     * status and attempt to load again, use {@link #reload()} or
+     * {@link #reloadNB()}.
+     * 
      * @throws PropertyException
-     *             if an error occurs while attempting to read the properties file
+     *             if an error occurs while attempting to read the properties
+     *             file
      */
     private void ensureLoaded() throws PropertyException
     {
-        if (!properties.isInitiated())
+        switch (properties.getStatus())
         {
-            try
-            {
-                Future<Void> task = load(true, false);
-                task.get();
-            }
-            catch (ExecutionException e)
-            {
-                throw new PropertyException(e.getCause());
-            }
-            catch (InterruptedException e)
-            {
-                throw new PropertyException("Loading of the properties file \""
-                                            + getFile().getAbsolutePath() + "\" was interrupted.");
-            }
+            case INITIALIZED:
+                return;
+            
+            case INIT_FAILED:
+                throw new PropertyException("Initialization of the file \""
+                                            + getFile().getAbsolutePath()
+                                            + "\" failed");
+            
+            case UNINITIALIZED:
+                try
+                {
+                    Future<Void> task = load(true, false);
+                    task.get();
+                }
+                catch (ExecutionException e)
+                {
+                    throw new PropertyException(e.getCause());
+                }
+                catch (InterruptedException e)
+                {
+                    throw new PropertyException("Loading of the properties file \""
+                                                + getFile().getAbsolutePath() + "\" was interrupted.");
+                }
+                
+                return;
         }
     }
 
@@ -1213,10 +1230,11 @@ public class PropertiesManager<T extends Enum<T>>
         private static final long serialVersionUID = 1L;
 
         /**
-         * A flag that determines whether or not this instance has been initiated with
-         * properties read from a resource (i.e. file or stream).
+         * A marker that indicates the initialization status of this instance.
+         * In other words, have the properties been read from a resource (i.e.
+         * file or stream), did reading the properties fail, etc.
          */
-        private volatile boolean initiated;
+        private volatile Status status = Status.UNINITIALIZED;
 
         /**
          * Construct a new managed instance.
@@ -1230,30 +1248,13 @@ public class PropertiesManager<T extends Enum<T>>
         }
 
         /**
-         * Retrieve a set of all of the keys with values that make up this properties
-         * instance (both keys with direct values and those with default values).
-         *
-         * @return the combined set of keys representing properties with direct values or
-         *         default values
+         * Determine the current initialization status of this instance.
+         * 
+         * @return the initialization status
          */
-        public synchronized Set<Object> combinedKeySet()
+        public Status getStatus()
         {
-            Set<Object> keys = new HashSet<Object>(keySet());
-            keys.addAll(defaults.keySet());
-
-            return keys;
-        }
-
-        /**
-         * Determine whether or not this instance has been loaded with properties from a
-         * resource (i.e. file or stream).
-         *
-         * @return <code>true</code> if this instance has been loaded; <code>false</code>
-         *         otherwise
-         */
-        public boolean isInitiated()
-        {
-            return initiated;
+            return status;
         }
 
         /**
@@ -1269,18 +1270,31 @@ public class PropertiesManager<T extends Enum<T>>
         {
             if (file.isFile())
             {
-                InputStream inputStream = new FileInputStream(file);
                 try
                 {
-                    load(inputStream);
+                    InputStream inputStream = new FileInputStream(file);
+                    try
+                    {
+                        load(inputStream);
+                    }
+                    finally
+                    {
+                        inputStream.close();
+                    }
                 }
-                finally
+                catch (RuntimeException e)
                 {
-                    inputStream.close();
+                    status = Status.INIT_FAILED;
+                    throw e;
+                }
+                catch (IOException e)
+                {
+                    status = Status.INIT_FAILED;
+                    throw e;
                 }
             }
 
-            initiated = true;
+            status = Status.INITIALIZED;
         }
 
         /**
@@ -1342,8 +1356,8 @@ public class PropertiesManager<T extends Enum<T>>
         @Override
         public synchronized void clear()
         {
+            status = Status.UNINITIALIZED;
             super.clear();
-            initiated = false;
         }
 
         /**
@@ -1387,5 +1401,38 @@ public class PropertiesManager<T extends Enum<T>>
         {
             return super.equals(o);
         }
+    }
+
+    /**
+     * This Enum provides the possible states that a {@link ManagedProperties}
+     * instance can occupy.
+     * 
+     * @author Gregory P. Moyer
+     */
+    private static enum Status
+    {
+        /**
+         * The properties file has not yet been read and so no values should be
+         * used in the properties instance until
+         * {@link ManagedProperties#load(File)} has been called.
+         */
+        UNINITIALIZED,
+
+        /**
+         * The properties object has been initialized. This does not mean that
+         * it read any properties from the file (because it is OK if the
+         * properties file does not exist). Instead, this state indicates that
+         * the {@link ManagedProperties#load(File)} was called and completed
+         * successfully. This means that values can be retrieved and set on this
+         * instance.
+         */
+        INITIALIZED,
+
+        /**
+         * A failure occurred while trying to load the properties instance. No
+         * values should be used until a successful load occurs (see
+         * {@link #INITIALIZED}).
+         */
+        INIT_FAILED
     }
 }
