@@ -18,11 +18,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.syphr</groupId>
   <artifactId>prom</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-beta1</version>
   <name>Prom</name>
   <description>Prom provides easy access to and lifecycle management for properties files in Java.</description>
   <url>https://launchpad.net/prom</url>
   <issueManagement>
+    <system>Launchpad</system>
+    <url>https://bugs.launchpad.net/prom/</url>
   </issueManagement>
   <inceptionYear>2010</inceptionYear>
   <developers>
@@ -36,6 +38,10 @@
   	</developer>
   </developers>
   <scm>
+    <connection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</connection>
+    <url>http://code.launchpad.net/prom</url>
+    <developerConnection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</developerConnection>
+    <tag>HEAD</tag>
   </scm>
   <organization>
   	<name>syphr.org</name>
