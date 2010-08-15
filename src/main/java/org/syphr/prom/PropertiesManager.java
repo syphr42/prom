@@ -26,15 +26,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -135,90 +134,6 @@ public class PropertiesManager<T extends Enum<T> & PropertyDescriptor>
      * @see #setComment(String)
      */
     private String comment;
-    
-    /**
-     * Construct a new manager for the given properties file.
-     *
-     * @param file
-     *            the file system location of the properties represented here
-     * @param descriptorType
-     *            the enumeration of keys in the properties file
-     */
-    public PropertiesManager(File file, Class<T> descriptorType)
-    {
-        this(file,
-             descriptorType,
-             PropertyDescriptorUtils.getDefaultTranslator(descriptorType),
-             new DefaultEvaluator(),
-             Executors.newCachedThreadPool());
-    }
-
-    /**
-     * Construct a new manager for the given properties file.
-     *
-     * @param file
-     *            the file system location of the properties represented here
-     * @param descriptorType
-     *            the enumeration of keys in the properties file
-     * @param executor
-     *            a service to handle potentially long running tasks, such as interacting
-     *            with the file system
-     */
-    public PropertiesManager(File file, Class<T> descriptorType, ExecutorService executor)
-    {
-        this(file,
-             descriptorType,
-             PropertyDescriptorUtils.getDefaultTranslator(descriptorType),
-             new DefaultEvaluator(),
-             executor);
-    }
-
-    /**
-     * Construct a new manager for the given properties file.
-     *
-     * @param file
-     *            the file system location of the properties represented here
-     * @param descriptorType
-     *            the enumeration of keys in the properties file
-     * @param translator
-     *            the translator to convert between Enum names and property keys
-     * @param executor
-     *            a service to handle potentially long running tasks, such as interacting
-     *            with the file system
-     */
-    public PropertiesManager(File file,
-                             Class<T> descriptorType,
-                             Translator<T> translator,
-                             ExecutorService executor)
-    {
-        this(file, descriptorType, translator, new DefaultEvaluator(), executor);
-    }
-
-    /**
-     * Construct a new manager for the given properties file.
-     *
-     * @param file
-     *            the file system location of the properties represented here
-     * @param descriptorType
-     *            the enumeration of keys in the properties file
-     * @param evaluator
-     *            the evaluator to convert nested property references into fully evaluated
-     *            strings
-     * @param executor
-     *            a service to handle potentially long running tasks, such as interacting
-     *            with the file system
-     */
-    public PropertiesManager(File file,
-                             Class<T> descriptorType,
-                             Evaluator evaluator,
-                             ExecutorService executor)
-    {
-        this(file,
-             descriptorType,
-             PropertyDescriptorUtils.getDefaultTranslator(descriptorType),
-             evaluator,
-             executor);
-    }
 
     /**
      * Construct a new manager for the given properties file.
