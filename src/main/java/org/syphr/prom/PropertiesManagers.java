@@ -26,17 +26,17 @@ import java.util.concurrent.Executors;
 /**
  * This class provides builder methods to construct {@link PropertiesManager
  * managers} with various options.
- * 
+ *
  * @author Gregory P. Moyer
  */
 public class PropertiesManagers
 {
     /**
      * Build a new manager for the given properties file.
-     * 
+     *
      * @param <T>
      *            the type of key used for the new manager
-     * 
+     *
      * @param file
      *            the file system location of the properties represented by the
      *            new manager
@@ -62,10 +62,10 @@ public class PropertiesManagers
 
     /**
      * Build a new manager for the given properties file.
-     * 
+     *
      * @param <T>
      *            the type of key used for the new manager
-     * 
+     *
      * @param file
      *            the file system location of the properties represented by the
      *            new manager
@@ -95,10 +95,10 @@ public class PropertiesManagers
 
     /**
      * Build a new manager for the given properties file.
-     * 
+     *
      * @param <T>
      *            the type of key used for the new manager
-     * 
+     *
      * @param file
      *            the file system location of the properties represented here
      * @param keyType
@@ -120,10 +120,10 @@ public class PropertiesManagers
 
     /**
      * Build a new manager for the given properties file.
-     * 
+     *
      * @param <T>
      *            the type of key used for the new manager
-     * 
+     *
      * @param file
      *            the file system location of the properties represented here
      * @param keyType
@@ -149,10 +149,10 @@ public class PropertiesManagers
 
     /**
      * Build a new manager for the given properties file.
-     * 
+     *
      * @param <T>
      *            the type of key used for the new manager
-     * 
+     *
      * @param file
      *            the file system location of the properties represented here
      * @param keyType
@@ -179,10 +179,10 @@ public class PropertiesManagers
 
     /**
      * Build a new manager for the given properties file.
-     * 
+     *
      * @param <T>
      *            the type of key used for the new manager
-     * 
+     *
      * @param file
      *            the file system location of the properties represented here
      * @param keyType
@@ -212,14 +212,14 @@ public class PropertiesManagers
 
     /**
      * Load values from a file.
-     * 
+     *
      * @param file
      *            the file containing default values
      * @return a new properties instance loaded with values from the given file
      * @throws IOException
      *             if there is an error while reading the given file
      */
-    private static Properties getProperties(File file) throws IOException
+    public static Properties getProperties(File file) throws IOException
     {
         Properties properties = new Properties();
 
@@ -239,7 +239,7 @@ public class PropertiesManagers
     /**
      * Retrieve a {@link Properties} instance that contains all of the default
      * values defined for the given {@link Defaultable}.
-     * 
+     *
      * @param <T>
      *            the key type whose default values are requested
      * @param keyType
@@ -267,7 +267,7 @@ public class PropertiesManagers
     /**
      * Get the default translator to convert back and forth between Enums and
      * property names (keys).
-     * 
+     *
      * @param <T>
      *            the type of Enum representing the properties
      * @param enumType
