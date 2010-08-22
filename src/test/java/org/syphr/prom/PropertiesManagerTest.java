@@ -187,8 +187,6 @@ public class PropertiesManagerTest
     @Test
     public void testAutoTrim()
     {
-        boolean prevAutoTrimValue = test2Manager.isAutoTrim();
-
         test2Manager.setAutoTrim(false);
         String notTrimmed = test2Manager.getProperty(Key2.VALUE_STRING_TRIM);
 
@@ -199,8 +197,6 @@ public class PropertiesManagerTest
                            trimmed.equals(notTrimmed));
         Assert.assertTrue("The trimmed and not trimmed values should be equal after manually trimming",
                           trimmed.equals(notTrimmed.trim()));
-
-        test2Manager.setAutoTrim(prevAutoTrimValue);
     }
     
     @Test
