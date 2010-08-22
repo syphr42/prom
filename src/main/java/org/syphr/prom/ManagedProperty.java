@@ -57,10 +57,7 @@ public class ManagedProperty<T extends Enum<T>>
         @Override
         public void changed(PropertyEvent<T> event)
         {
-            T eventProperty = event.getProperty();
-
-            if (eventProperty == null || eventProperty.equals(propertyKey)
-                || isReferencing(eventProperty))
+            if (isRelevant(event))
             {
                 for (PropertyListener<T> listener : listeners)
                 {
@@ -72,19 +69,19 @@ public class ManagedProperty<T extends Enum<T>>
         @Override
         public void loaded(PropertyEvent<T> event)
         {
-            for (PropertyListener<T> listener : listeners)
+            if (isRelevant(event))
             {
-                listener.loaded(event);
+                for (PropertyListener<T> listener : listeners)
+                {
+                    listener.loaded(event);
+                }
             }
         }
 
         @Override
         public void saved(PropertyEvent<T> event)
         {
-            T eventProperty = event.getProperty();
-
-            if (eventProperty == null || eventProperty.equals(propertyKey)
-                || isReferencing(eventProperty))
+            if (isRelevant(event))
             {
                 for (PropertyListener<T> listener : listeners)
                 {
@@ -96,16 +93,31 @@ public class ManagedProperty<T extends Enum<T>>
         @Override
         public void reset(PropertyEvent<T> event)
         {
-            T eventProperty = event.getProperty();
-
-            if (eventProperty == null || eventProperty.equals(propertyKey)
-                || isReferencing(eventProperty))
+            if (isRelevant(event))
             {
                 for (PropertyListener<T> listener : listeners)
                 {
                     listener.reset(event);
                 }
             }
+        }
+
+        /**
+         * Determine whether or not the given event is relevant to the property
+         * managed by this instance.
+         * 
+         * @param event
+         *            the event
+         * @return <code>true</code> if the event is relevant to this instance;
+         *         <code>false</code> otherwise
+         */
+        private boolean isRelevant(PropertyEvent<T> event)
+        {
+            T eventProperty = event.getProperty();
+
+            return eventProperty == null
+                   || eventProperty.equals(propertyKey)
+                   || isReferencing(eventProperty);
         }
     };
 
