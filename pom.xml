@@ -18,7 +18,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.syphr</groupId>
   <artifactId>prom</artifactId>
-  <version>1.0-beta2</version>
+  <version>1.0-beta3-SNAPSHOT</version>
+  <packaging>jar</packaging>
   <name>Prom</name>
   <description>Prom provides easy access to and lifecycle management for properties files in Java.</description>
   <url>https://launchpad.net/prom</url>
@@ -36,7 +37,7 @@
   <inceptionYear>2010</inceptionYear>
   <developers>
   	<developer>
-  		<id>moyerg</id>
+  		<id>moyerg@syphr.com</id>
   		<name>Gregory Moyer</name>
   		<email>moyerg@syphr.com</email>
   		<roles>
