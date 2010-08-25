@@ -51,7 +51,7 @@
   </properties>
   <scm>
     <connection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</connection>
-    <url>http://code.launchpad.net/prom</url>
+    <url>https://code.launchpad.net/prom</url>
     <developerConnection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</developerConnection>
     <tag>HEAD</tag>
   </scm>
