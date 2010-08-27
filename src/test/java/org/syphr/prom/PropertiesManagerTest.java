@@ -90,7 +90,7 @@ public class PropertiesManagerTest
 
         baseIn2Default.close();
         baseOut2Default.close();
-        
+
         TRANSLATOR1 = new Translator<Key1>()
         {
             @Override
@@ -121,11 +121,11 @@ public class PropertiesManagerTest
     private PropertiesManager<Key2> test2Manager;
 
     @Before
-    public void setUp() throws IOException, PropertyException
+    public void setUp() throws IOException
     {
         test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, TRANSLATOR1, EXECUTOR);
         test1Manager.load();
-        
+
         test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, TEST_PROPS_2_DEFAULT, Key2.class, EXECUTOR);
         test2Manager.load();
     }
@@ -199,7 +199,7 @@ public class PropertiesManagerTest
         Assert.assertTrue("The trimmed and not trimmed values should be equal after manually trimming",
                           trimmed.equals(notTrimmed.trim()));
     }
-    
+
     @Test
     public void testKeySet()
     {

@@ -15,6 +15,7 @@
  */
 package org.syphr.prom;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -105,7 +106,7 @@ public class ManagedProperty<T extends Enum<T>>
         /**
          * Determine whether or not the given event is relevant to the property
          * managed by this instance.
-         * 
+         *
          * @param event
          *            the event
          * @return <code>true</code> if the event is relevant to this instance;
@@ -252,10 +253,8 @@ public class ManagedProperty<T extends Enum<T>>
      *            see delegate
      * @param value
      *            see delegate
-     * @throws PropertyException
-     *             see delegate
      */
-    public <E extends Enum<E>> void setProperty(E value) throws PropertyException
+    public <E extends Enum<E>> void setProperty(E value)
     {
         manager.setProperty(propertyKey, value);
     }
@@ -265,10 +264,8 @@ public class ManagedProperty<T extends Enum<T>>
      *
      * @param value
      *            see delegate
-     * @throws PropertyException
-     *             see delegate
      */
-    public void setProperty(Object value) throws PropertyException
+    public void setProperty(Object value)
     {
         manager.setProperty(propertyKey, value);
     }
@@ -278,10 +275,8 @@ public class ManagedProperty<T extends Enum<T>>
      *
      * @param value
      *            see delegate
-     * @throws PropertyException
-     *             see delegate
      */
-    public void setProperty(String value) throws PropertyException
+    public void setProperty(String value)
     {
         manager.setProperty(propertyKey, value);
     }
@@ -293,10 +288,10 @@ public class ManagedProperty<T extends Enum<T>>
      *            see delegate
      * @param value
      *            see delegate
-     * @throws PropertyException
+     * @throws IOException
      *             see delegate
      */
-    public <E extends Enum<E>> void saveProperty(E value) throws PropertyException
+    public <E extends Enum<E>> void saveProperty(E value) throws IOException
     {
         manager.saveProperty(propertyKey, value);
     }
@@ -306,10 +301,10 @@ public class ManagedProperty<T extends Enum<T>>
      *
      * @param value
      *            see delegate
-     * @throws PropertyException
+     * @throws IOException
      *             see delegate
      */
-    public void saveProperty(Object value) throws PropertyException
+    public void saveProperty(Object value) throws IOException
     {
         manager.saveProperty(propertyKey, value);
     }
@@ -319,21 +314,18 @@ public class ManagedProperty<T extends Enum<T>>
      *
      * @param value
      *            see delegate
-     * @throws PropertyException
+     * @throws IOException
      *             see delegate
      */
-    public void saveProperty(String value) throws PropertyException
+    public void saveProperty(String value) throws IOException
     {
         manager.saveProperty(propertyKey, value);
     }
 
     /**
      * Delegate to {@link PropertiesManager#resetProperty(Enum)}.
-     *
-     * @throws PropertyException
-     *             see delegate
      */
-    public void resetProperty() throws PropertyException
+    public void resetProperty()
     {
         manager.resetProperty(propertyKey);
     }

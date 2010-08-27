@@ -24,10 +24,10 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -125,7 +125,7 @@ public class PropertiesManager<T extends Enum<T>>
 
     /**
      * Construct a new manager for the given properties file.
-     * 
+     *
      * @param file
      *            the file system location of the properties represented here
      * @param defaults
@@ -154,10 +154,10 @@ public class PropertiesManager<T extends Enum<T>>
 
         properties = new ManagedProperties(copyProperties(defaults));
     }
-    
+
     /**
      * Copy the given properties to a new object.
-     * 
+     *
      * @param source
      *            the source from which to copy
      * @return a copy of the source or <code>null</code> if the source is
@@ -600,7 +600,7 @@ public class PropertiesManager<T extends Enum<T>>
     private String getRawDefaultProperty(T property) throws IllegalStateException
     {
         ensureLoaded();
-        
+
         String value = properties.getDefaultValue(getTranslator().getPropertyName(property));
 
         if (isAutoTrim())
@@ -663,11 +663,11 @@ public class PropertiesManager<T extends Enum<T>>
      * <br>
      * This method will block and wait for the properties to be loaded. See
      * {@link #loadNB()} for a non-blocking version.
-     * 
-     * @throws PropertyException
+     *
+     * @throws IOException
      *             if there is an error while attempting to load the properties
      */
-    public void load() throws PropertyException
+    public void load() throws IOException
     {
         try
         {
@@ -676,11 +676,18 @@ public class PropertiesManager<T extends Enum<T>>
         }
         catch (ExecutionException e)
         {
-            throw new PropertyException(e.getCause());
+            Throwable t = e.getCause();
+
+            if (t instanceof IOException)
+            {
+                throw (IOException)t;
+            }
+
+            throw new IOException(t);
         }
         catch (InterruptedException e)
         {
-            throw new PropertyException("Loading of the properties file \""
+            throw new IOException("Loading of the properties file \""
                                         + getFile().getAbsolutePath() + "\" was interrupted.");
         }
     }
@@ -721,9 +728,9 @@ public class PropertiesManager<T extends Enum<T>>
      * <br>
      * Please note that the Enum value set here is case insensitive. See
      * {@link #getEnumProperty(Enum, Class)} for additional details.
-     * 
+     *
      * @see #saveProperty(Enum, Enum)
-     * 
+     *
      * @param <E>
      *            the type of Enum value to set
      * @param property
@@ -771,9 +778,9 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * Set the given property using a string. This will not write the new value
      * to the file system.
-     * 
+     *
      * @see #saveProperty(Enum, String)
-     * 
+     *
      * @param property
      *            the property whose value is being set
      * @param value
@@ -828,17 +835,17 @@ public class PropertiesManager<T extends Enum<T>>
      * <br>
      * Please note that the Enum value saved here is case insensitive. See
      * {@link #getEnumProperty(Enum, Class)} for additional details.
-     * 
+     *
      * @param <E>
      *            the type of Enum value to save
      * @param property
      *            the property whose value is being saved
      * @param value
      *            the value to save
-     * @throws PropertyException
+     * @throws IOException
      *             if there is an error while attempting to save the properties
      */
-    public <E extends Enum<E>> void saveProperty(T property, E value) throws PropertyException
+    public <E extends Enum<E>> void saveProperty(T property, E value) throws IOException
     {
         saveProperty(property, value.name());
     }
@@ -846,15 +853,15 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * Save the given property using an object's string representation. See
      * {@link #saveProperty(Enum, String)} for additional details.
-     * 
+     *
      * @param property
      *            the property whose value is being saved
      * @param value
      *            the value to save
-     * @throws PropertyException
+     * @throws IOException
      *             if there is an error while attempting to save the properties
      */
-    public void saveProperty(T property, Object value) throws PropertyException
+    public void saveProperty(T property, Object value) throws IOException
     {
         saveProperty(property, value.toString());
     }
@@ -867,15 +874,15 @@ public class PropertiesManager<T extends Enum<T>>
      * properties will be atomic. In other words, it is possible that this call
      * will modify the value, another call will further change the value, and
      * then the properties will be saved.
-     * 
+     *
      * @param property
      *            the property whose value is being saved
      * @param value
      *            the value to save
-     * @throws PropertyException
+     * @throws IOException
      *             if there is an error while attempting to save the properties
      */
-    public void saveProperty(T property, String value) throws PropertyException
+    public void saveProperty(T property, String value) throws IOException
     {
         setProperty(property, value);
         save();
@@ -887,10 +894,10 @@ public class PropertiesManager<T extends Enum<T>>
      * This method will block and wait for the properties to be saved. See
      * {@link #saveNB()} for a non-blocking version.
      *
-     * @throws PropertyException
+     * @throws IOException
      *             if there is an error while attempting to save the properties
      */
-    public void save() throws PropertyException
+    public void save() throws IOException
     {
         try
         {
@@ -899,12 +906,19 @@ public class PropertiesManager<T extends Enum<T>>
         }
         catch (ExecutionException e)
         {
-            throw new PropertyException(e.getCause());
+            Throwable t = e.getCause();
+
+            if (t instanceof IOException)
+            {
+                throw (IOException)t;
+            }
+
+            throw new IOException(t);
         }
         catch (InterruptedException e)
         {
-            throw new PropertyException("Saving of the properties file \""
-                                        + getFile().getAbsolutePath() + "\" was interrupted.");
+            throw new IOException("Saving of the properties file \"" + getFile().getAbsolutePath()
+                                  + "\" was interrupted.");
         }
     }
 
@@ -1017,10 +1031,10 @@ public class PropertiesManager<T extends Enum<T>>
 
     /**
      * Ensure that the properties have been loaded.
-     * 
+     *
      * @see #load()
      * @see #loadNB()
-     * 
+     *
      * @throws IllegalStateException
      *             if the properties have not yet been loaded
      */
@@ -1145,7 +1159,7 @@ public class PropertiesManager<T extends Enum<T>>
 
         /**
          * Construct a new managed instance.
-         * 
+         *
          * @param defaults
          *            the default values
          */
@@ -1156,7 +1170,7 @@ public class PropertiesManager<T extends Enum<T>>
 
         /**
          * Determine the current initialization status of this instance.
-         * 
+         *
          * @return the initialization status
          */
         public Status getStatus()
@@ -1166,7 +1180,7 @@ public class PropertiesManager<T extends Enum<T>>
 
         /**
          * Load the given file.
-         * 
+         *
          * @param file
          *            the file containing the current property values (this file
          *            does not have to exist)
@@ -1177,7 +1191,7 @@ public class PropertiesManager<T extends Enum<T>>
         public synchronized void load(File file) throws IOException
         {
             status = Status.UNINITIALIZED;
-            
+
             /*
              * We do not want to throw a FileNotFoundException here because it
              * is OK if the file does not exist. In this case, default values
@@ -1308,7 +1322,7 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * This Enum provides the possible states that a {@link ManagedProperties}
      * instance can occupy.
-     * 
+     *
      * @author Gregory P. Moyer
      */
     private static enum Status
