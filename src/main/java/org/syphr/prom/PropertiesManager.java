@@ -708,7 +708,6 @@ public class PropertiesManager<T extends Enum<T>>
                 }
 
                 firePropertiesLoaded();
-
                 return null;
             }
         };
@@ -916,21 +915,6 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public Future<Void> saveNB()
     {
-        return save(true);
-    }
-
-    /**
-     * Save the properties file with the option of whether or not to notify listeners.<br>
-     * <br>
-     * This method will not block to wait for the save to complete.
-     *
-     * @param notifyListeners
-     *            if <code>true</code>, listeners will be notified; otherwise there will
-     *            be no notifications
-     * @return a task representing this save request
-     */
-    private Future<Void> save(final boolean notifyListeners)
-    {
         Callable<Void> task = new Callable<Void>()
         {
             @Override
@@ -949,11 +933,7 @@ public class PropertiesManager<T extends Enum<T>>
                     }
                 }
 
-                if (notifyListeners)
-                {
-                    firePropertiesSaved();
-                }
-
+                firePropertiesSaved();
                 return null;
             }
         };
