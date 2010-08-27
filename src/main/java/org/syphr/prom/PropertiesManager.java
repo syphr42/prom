@@ -324,19 +324,12 @@ public class PropertiesManager<T extends Enum<T>>
      *
      * @return a {@link Properties} instance containing the properties managed by this
      *         instance
+     * @throws IllegalStateException
+     *             if the properties have not yet been loaded
      */
-    public Properties getProperties()
+    public Properties getProperties() throws IllegalStateException
     {
-        try
-        {
-            ensureLoaded();
-        }
-        catch (PropertyException e)
-        {
-            logger.log(Level.SEVERE, e.getMessage(), e);
-            return new Properties();
-        }
-
+        ensureLoaded();
         return properties.getProperties();
     }
 
@@ -351,20 +344,14 @@ public class PropertiesManager<T extends Enum<T>>
      * value associated with it. In that case, it would not be included in this set.
      *
      * @return the set of keys currently in use by this manager
+     * @throws IllegalStateException
+     *             if the properties have not yet been loaded
      */
-    public Set<T> keySet()
+    public Set<T> keySet() throws IllegalStateException
     {
         Set<T> keys = new TreeSet<T>();
 
-        try
-        {
-            ensureLoaded();
-        }
-        catch (PropertyException e)
-        {
-            logger.log(Level.SEVERE, e.getMessage(), e);
-            return keys;
-        }
+        ensureLoaded();
 
         synchronized (properties)
         {
@@ -388,10 +375,7 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Get the current value of the given property.<br>
-     * <br>
-     * This method will block and wait for the properties to be loaded if they have not
-     * been already. See {@link #reload()}.
+     * Get the current value of the given property.
      *
      * @param property
      *            the property to retrieve
@@ -556,27 +540,17 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * Get the current value of the given property, but without translating references. If
      * {@link #isAutoTrim() auto trim} is enabled, the value will also be trimmed of
-     * whitespace.<br>
-     * <br>
-     * This method will block and wait for the properties to be loaded if they have not
-     * been already. See {@link #reload()}.
+     * whitespace.
      *
      * @param property
      *            the property to retrieve
-     * @return the value of the given property (or <code>null</code> if an error occurred
-     *         while attempting to read the properties)
+     * @return the value of the given property
+     * @throws IllegalStateException
+     *             if the properties have not yet been loaded
      */
-    public String getRawProperty(T property)
+    public String getRawProperty(T property) throws IllegalStateException
     {
-        try
-        {
-            ensureLoaded();
-        }
-        catch (PropertyException e)
-        {
-            logger.log(Level.SEVERE, e.getMessage(), e);
-            return null;
-        }
+        ensureLoaded();
 
         String propertyName = getTranslator().getPropertyName(property);
         String value;
@@ -603,7 +577,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public boolean isDefault(T property)
     {
-        return getRawProperty(property).equals(getDefaultPropertyRaw(property));
+        return getRawProperty(property).equals(getRawDefaultProperty(property));
     }
 
     /**
@@ -620,9 +594,13 @@ public class PropertiesManager<T extends Enum<T>>
      * @param property
      *            the property whose default value is requested
      * @return the default raw value of the given property
+     * @throws IllegalStateException
+     *             if the properties have not yet been loaded
      */
-    private String getDefaultPropertyRaw(T property)
+    private String getRawDefaultProperty(T property) throws IllegalStateException
     {
+        ensureLoaded();
+        
         String value = properties.getDefaultValue(getTranslator().getPropertyName(property));
 
         if (isAutoTrim())
@@ -637,7 +615,7 @@ public class PropertiesManager<T extends Enum<T>>
      * Retrieve the evaluated default value of the given property.<br>
      * <br>
      * For an explanation of why this functionality is hidden, see
-     * {@link #getDefaultPropertyRaw(Enum)}.
+     * {@link #getRawDefaultProperty(Enum)}.
      *
      * @param property
      *            the property whose default value is requested
@@ -645,7 +623,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     private String getDefaultProperty(T property)
     {
-        return getEvaluator().evaluate(getDefaultPropertyRaw(property), getRetriever());
+        return getEvaluator().evaluate(getRawDefaultProperty(property), getRetriever());
     }
 
     /**
@@ -681,19 +659,19 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Reload the current values of all properties.<br>
+     * Load the current values of all properties.<br>
      * <br>
      * This method will block and wait for the properties to be loaded. See
-     * {@link #reloadNB()} for a non-blocking version.
-     *
+     * {@link #loadNB()} for a non-blocking version.
+     * 
      * @throws PropertyException
      *             if there is an error while attempting to load the properties
      */
-    public void reload() throws PropertyException
+    public void load() throws PropertyException
     {
         try
         {
-            Future<Void> task = reloadNB();
+            Future<Void> task = loadNB();
             task.get();
         }
         catch (ExecutionException e)
@@ -702,38 +680,21 @@ public class PropertiesManager<T extends Enum<T>>
         }
         catch (InterruptedException e)
         {
-            throw new PropertyException("Reloading of the properties file \""
+            throw new PropertyException("Loading of the properties file \""
                                         + getFile().getAbsolutePath() + "\" was interrupted.");
         }
     }
 
     /**
-     * Reload the current values of all properties.<br>
+     * Load the properties file. This will override all current values with
+     * whatever has last been saved.<br>
      * <br>
      * This method will not block to wait for the properties to be loaded. See
-     * {@link #reload()} for a blocking version.
+     * {@link #load()} for a blocking version.
      *
-     * @return a task representing this load request
+     * @return a {@link Future} representing this load request
      */
-    public Future<Void> reloadNB()
-    {
-        return load(true, true);
-    }
-
-    /**
-     * Load the properties file with the option of whether or not to notify listeners.<br>
-     * <br>
-     * This method will not block to wait for the load to complete.
-     *
-     * @param notifyListeners
-     *            if <code>true</code>, listeners will be notified; otherwise there will
-     *            be no notifications
-     * @param reload
-     *            if <code>true</code>, properties will be always be loaded; otherwise,
-     *            properties will only be loaded if they have not already been loaded
-     * @return a task representing this load request
-     */
-    private Future<Void> load(final boolean notifyListeners, final boolean reload)
+    public Future<Void> loadNB()
     {
         Callable<Void> task = new Callable<Void>()
         {
@@ -742,20 +703,11 @@ public class PropertiesManager<T extends Enum<T>>
             {
                 synchronized (properties)
                 {
-                    if (!reload
-                        && !Status.UNINITIALIZED.equals(properties.getStatus()))
-                    {
-                        return null;
-                    }
-
                     properties.clear();
                     properties.load(getFile());
                 }
 
-                if (notifyListeners)
-                {
-                    firePropertiesLoaded();
-                }
+                firePropertiesLoaded();
 
                 return null;
             }
@@ -765,25 +717,25 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Set the given property using an Enum constant. This will not write the new value to
-     * the file system.<br>
+     * Set the given property using an Enum constant. This will not write the
+     * new value to the file system.<br>
      * <br>
      * Please note that the Enum value set here is case insensitive. See
      * {@link #getEnumProperty(Enum, Class)} for additional details.
-     *
+     * 
      * @see #saveProperty(Enum, Enum)
-     *
+     * 
      * @param <E>
      *            the type of Enum value to set
      * @param property
      *            the property whose value is being set
      * @param value
      *            the value to set
-     * @throws PropertyException
-     *             if the properties file has not yet been loaded and an error occurs
-     *             while trying to do so
+     * @throws IllegalArgumentException
+     *             if a <code>null</code> value is given (see
+     *             {@link #resetProperty(Enum)})
      */
-    public <E extends Enum<E>> void setProperty(T property, E value) throws PropertyException
+    public <E extends Enum<E>> void setProperty(T property, E value) throws IllegalArgumentException
     {
         if (value == null)
         {
@@ -803,11 +755,11 @@ public class PropertiesManager<T extends Enum<T>>
      *            the property whose value is being set
      * @param value
      *            the value to set
-     * @throws PropertyException
-     *             if the properties file has not yet been loaded and an error occurs
-     *             while trying to do so
+     * @throws IllegalArgumentException
+     *             if a <code>null</code> value is given (see
+     *             {@link #resetProperty(Enum)})
      */
-    public void setProperty(T property, Object value) throws PropertyException
+    public void setProperty(T property, Object value) throws IllegalArgumentException
     {
         if (value == null)
         {
@@ -818,20 +770,23 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Set the given property using a string. This will not write the new value to the
-     * file system.
-     *
+     * Set the given property using a string. This will not write the new value
+     * to the file system.
+     * 
      * @see #saveProperty(Enum, String)
-     *
+     * 
      * @param property
      *            the property whose value is being set
      * @param value
      *            the value to set
-     * @throws PropertyException
-     *             if the properties file has not yet been loaded and an error occurs
-     *             while trying to do so
+     * @throws IllegalArgumentException
+     *             if a <code>null</code> value is given (see
+     *             {@link #resetProperty(Enum)})
+     * @throws IllegalStateException
+     *             if the properties have not yet been loaded
      */
-    public void setProperty(T property, String value) throws PropertyException
+    public void setProperty(T property, String value) throws IllegalArgumentException,
+                                                     IllegalStateException
     {
         if (value == null)
         {
@@ -874,7 +829,7 @@ public class PropertiesManager<T extends Enum<T>>
      * <br>
      * Please note that the Enum value saved here is case insensitive. See
      * {@link #getEnumProperty(Enum, Class)} for additional details.
-     *
+     * 
      * @param <E>
      *            the type of Enum value to save
      * @param property
@@ -882,8 +837,7 @@ public class PropertiesManager<T extends Enum<T>>
      * @param value
      *            the value to save
      * @throws PropertyException
-     *             if there is an error while attempting to load and/or save the
-     *             properties
+     *             if there is an error while attempting to save the properties
      */
     public <E extends Enum<E>> void saveProperty(T property, E value) throws PropertyException
     {
@@ -893,14 +847,13 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * Save the given property using an object's string representation. See
      * {@link #saveProperty(Enum, String)} for additional details.
-     *
+     * 
      * @param property
      *            the property whose value is being saved
      * @param value
      *            the value to save
      * @throws PropertyException
-     *             if there is an error while attempting to load and/or save the
-     *             properties
+     *             if there is an error while attempting to save the properties
      */
     public void saveProperty(T property, Object value) throws PropertyException
     {
@@ -908,19 +861,15 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Modify the value of the given property and save all properties to permanent
-     * storage.<br>
-     * <br>
-     * This method will block and wait for the properties to be loaded if they have not
-     * been already. See {@link #reload()}.
-     *
+     * Modify the value of the given property and save all properties to
+     * permanent storage.
+     * 
      * @param property
      *            the property whose value is being saved
      * @param value
      *            the value to save
      * @throws PropertyException
-     *             if there is an error while attempting to load and/or save the
-     *             properties
+     *             if there is an error while attempting to save the properties
      */
     public void saveProperty(T property, String value) throws PropertyException
     {
@@ -1018,11 +967,10 @@ public class PropertiesManager<T extends Enum<T>>
      *
      * @param property
      *            the property whose value is being reset
-     * @throws PropertyException
-     *             if the properties file has not yet been loaded and an error occurs
-     *             while trying to do so
+     * @throws IllegalStateException
+     *             if the properties have not yet been loaded
      */
-    public void resetProperty(T property) throws PropertyException
+    public void resetProperty(T property) throws IllegalStateException
     {
         ensureLoaded();
 
@@ -1085,47 +1033,23 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Load the properties file if it is not currently loaded. If the file has
-     * already been loaded, this will be a no-op.<br>
-     * <br>
-     * If an attempt has already been made to load the properties file and it
-     * failed, this method will always throw an exception. To clear the failed
-     * status and attempt to load again, use {@link #reload()} or
-     * {@link #reloadNB()}.
+     * Ensure that the properties have been loaded.
      * 
-     * @throws PropertyException
-     *             if an error occurs while attempting to read the properties
-     *             file
+     * @see #load()
+     * @see #loadNB()
+     * 
+     * @throws IllegalStateException
+     *             if the properties have not yet been loaded
      */
-    private void ensureLoaded() throws PropertyException
+    private void ensureLoaded() throws IllegalStateException
     {
         switch (properties.getStatus())
         {
             case INITIALIZED:
                 return;
-            
-            case INIT_FAILED:
-                throw new PropertyException("Initialization of the file \""
-                                            + getFile().getAbsolutePath()
-                                            + "\" failed");
-            
+
             case UNINITIALIZED:
-                try
-                {
-                    Future<Void> task = load(true, false);
-                    task.get();
-                }
-                catch (ExecutionException e)
-                {
-                    throw new PropertyException(e.getCause());
-                }
-                catch (InterruptedException e)
-                {
-                    throw new PropertyException("Loading of the properties file \""
-                                                + getFile().getAbsolutePath() + "\" was interrupted.");
-                }
-                
-                return;
+                throw new IllegalStateException("Illegal access: properties have not yet been loaded");
         }
     }
 
@@ -1261,36 +1185,31 @@ public class PropertiesManager<T extends Enum<T>>
          * Load the given file.
          * 
          * @param file
-         *            the file containing the current property values
+         *            the file containing the current property values (this file
+         *            does not have to exist)
          * @throws IOException
          *             if there is a file system error while attempting to read
          *             the file
          */
         public synchronized void load(File file) throws IOException
         {
+            status = Status.UNINITIALIZED;
+            
+            /*
+             * We do not want to throw a FileNotFoundException here because it
+             * is OK if the file does not exist. In this case, default values
+             * will be used.
+             */
             if (file.isFile())
             {
+                InputStream inputStream = new FileInputStream(file);
                 try
                 {
-                    InputStream inputStream = new FileInputStream(file);
-                    try
-                    {
-                        load(inputStream);
-                    }
-                    finally
-                    {
-                        inputStream.close();
-                    }
+                    load(inputStream);
                 }
-                catch (RuntimeException e)
+                finally
                 {
-                    status = Status.INIT_FAILED;
-                    throw e;
-                }
-                catch (IOException e)
-                {
-                    status = Status.INIT_FAILED;
-                    throw e;
+                    inputStream.close();
                 }
             }
 
@@ -1427,12 +1346,5 @@ public class PropertiesManager<T extends Enum<T>>
          * instance.
          */
         INITIALIZED,
-
-        /**
-         * A failure occurred while trying to load the properties instance. No
-         * values should be used until a successful load occurs (see
-         * {@link #INITIALIZED}).
-         */
-        INIT_FAILED
     }
 }

@@ -17,6 +17,7 @@ package org.syphr.prom;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumSet;
@@ -31,9 +32,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.syphr.prom.PropertiesManager;
-import org.syphr.prom.Defaultable;
-import org.syphr.prom.Translator;
 
 public class PropertiesManagerTest
 {
@@ -123,10 +121,13 @@ public class PropertiesManagerTest
     private PropertiesManager<Key2> test2Manager;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp() throws IOException, PropertyException
     {
         test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, TRANSLATOR1, EXECUTOR);
+        test1Manager.load();
+        
         test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, TEST_PROPS_2_DEFAULT, Key2.class, EXECUTOR);
+        test2Manager.load();
     }
 
     @Test
