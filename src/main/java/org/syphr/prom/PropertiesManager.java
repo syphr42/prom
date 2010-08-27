@@ -861,7 +861,12 @@ public class PropertiesManager<T extends Enum<T>>
 
     /**
      * Modify the value of the given property and save all properties to
-     * permanent storage.
+     * permanent storage.<br>
+     * <br>
+     * Note that there is no guarantee that the modification and saving the
+     * properties will be atomic. In other words, it is possible that this call
+     * will modify the value, another call will further change the value, and
+     * then the properties will be saved.
      * 
      * @param property
      *            the property whose value is being saved
@@ -872,8 +877,6 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public void saveProperty(T property, String value) throws PropertyException
     {
-        // TODO potential sync issue here - can't lock on properties because the
-        // worker thread will deadlock
         setProperty(property, value);
         save();
     }
