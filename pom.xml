@@ -57,11 +57,12 @@
   <scm>
     <connection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</connection>
     <url>https://code.launchpad.net/prom</url>
-    <developerConnection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</developerConnection>
+    <developerConnection>scm:bazaar:bzr+ssh://bazaar.launchpad.net/~syphr42/prom/trunk/</developerConnection>
     <tag>HEAD</tag>
   </scm>
   <organization>
-  	<name>syphr.org</name>
+  	<name>Gregory P. Moyer</name>
+  	<url>http://www.syphr.org</url>
   </organization>
   <build>
   	<plugins>
@@ -105,4 +106,19 @@
   		<scope>test</scope>
   	</dependency>
   </dependencies>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.7</version>
+      </plugin>
+    </plugins>
+  </reporting>
+  <distributionManagement>
+    <site>
+      <id>syphr.org</id>
+      <url>scp://neptune/var/www/syphr.org/</url>
+    </site>
+  </distributionManagement>
 </project>
