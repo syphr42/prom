@@ -75,14 +75,24 @@
             </configuration>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <configuration>
-            <descriptors>
-              <descriptor>src/main/assembly/bin.xml</descriptor>
-              <descriptor>src/main/assembly/src.xml</descriptor>
-            </descriptors>
-            <tarLongFileMode>gnu</tarLongFileMode>
-          </configuration>
+          <executions>
+             <execution>
+               <phase>package</phase>
+               <goals>
+                 <goal>assembly</goal>
+               </goals>
+	           <configuration>
+	             <descriptors>
+	               <descriptor>src/main/assembly/bin.xml</descriptor>
+	               <descriptor>src/main/assembly/src.xml</descriptor>
+	             </descriptors>
+	             <tarLongFileMode>gnu</tarLongFileMode>
+	             <outputDirectory>target/assemblies</outputDirectory>
+	           </configuration>
+             </execution>
+           </executions>
         </plugin>
   	</plugins>
   	<sourceDirectory>src/main/java</sourceDirectory>
