@@ -644,14 +644,16 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Determine whether or not a reference to another property exists in the value of the
-     * given property at the given position. If such a reference does exist, return it.
-     *
+     * Retrieve the reference to another property from within the value of the
+     * given property at the given position. If such a reference does not exist,
+     * the result of this method will be <code>null</code>.
+     * 
      * @param property
      *            the property to search for the requested reference
      * @param position
      *            the position to check for a reference
-     * @return the appropriate reference if one exists; <code>null</code> otherwise
+     * @return the appropriate reference if one exists; <code>null</code>
+     *         otherwise
      */
     public Reference referenceAt(T property, int position)
     {
