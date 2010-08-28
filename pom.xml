@@ -35,6 +35,11 @@
     <url>https://bugs.launchpad.net/prom/</url>
   </issueManagement>
   <inceptionYear>2010</inceptionYear>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>4</version>
+  </parent>
   <developers>
   	<developer>
   		<id>moyerg@syphr.com</id>
