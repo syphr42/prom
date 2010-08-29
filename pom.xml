@@ -101,6 +101,7 @@
           <configuration>
             <pushChanges>false</pushChanges>
             <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+            <localCheckout>true</localCheckout>
           </configuration>
         </plugin>
   	</plugins>
