@@ -164,8 +164,19 @@ public class DefaultEvaluator implements Evaluator
             while (matcher.find())
             {
                 String name = matcher.group(1);
+                String value = retriever.retrieve(name);
+
+                /*
+                 * If the retriever has no value for the given name, then this
+                 * is not a valid reference.
+                 */
+                if (value == null)
+                {
+                   continue; 
+                }
+                
                 Reference ref = new Reference(name,
-                                              retriever.retrieve(name),
+                                              value,
                                               matcher.start(),
                                               matcher.end());
 

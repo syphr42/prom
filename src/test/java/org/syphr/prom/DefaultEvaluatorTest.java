@@ -33,26 +33,46 @@ public class DefaultEvaluatorTest
     private static final String KEY_1 = "test1";
     private static final String RAW_VALUE_1 = "value numero uno";
     private static final String EVAL_VALUE_1 = RAW_VALUE_1;
+    private static final String KEY_1_VAR = "${" + KEY_1 + "}";
 
     private static final String KEY_2 = "test2";
     private static final String RAW_VALUE_2 = "value numero dos";
     private static final String EVAL_VALUE_2 = RAW_VALUE_2;
+    private static final String KEY_2_VAR = "${" + KEY_2 + "}";
 
+    /*
+     * Key3 contains direct references to Key1 and Key2.
+     */
     private static final String KEY_3 = "test3";
-    private static final String RAW_VALUE_3_KEY_1_VAR = "${" + KEY_1 + "}";
-    private static final String RAW_VALUE_3_KEY_2_VAR = "${" + KEY_2 + "}";
-    private static final String RAW_VALUE_3 = "prefix " + RAW_VALUE_3_KEY_1_VAR + " middle "
-                                              + RAW_VALUE_3_KEY_2_VAR + " suffix";
-    private static final int RAW_VALUE_3_KEY_1_START = RAW_VALUE_3.indexOf(RAW_VALUE_3_KEY_1_VAR);
+    private static final String RAW_VALUE_3 = "prefix "
+                                              + KEY_1_VAR
+                                              + " middle "
+                                              + KEY_2_VAR
+                                              + " suffix";
+    private static final int RAW_VALUE_3_KEY_1_START = RAW_VALUE_3.indexOf(KEY_1_VAR);
     private static final int RAW_VALUE_3_KEY_1_END = RAW_VALUE_3_KEY_1_START
-                                                     + RAW_VALUE_3_KEY_1_VAR.length();
-    private static final String EVAL_VALUE_3 = "prefix " + RAW_VALUE_1 + " middle " + RAW_VALUE_2
+                                                     + KEY_1_VAR.length();
+    private static final String EVAL_VALUE_3 = "prefix "
+                                               + RAW_VALUE_1
+                                               + " middle "
+                                               + RAW_VALUE_2
                                                + " suffix";
 
+    /*
+     * Key4 contains a direct reference to Key3 and indirect references to Key1
+     * and Key2.
+     */
     private static final String KEY_4 = "test4";
     private static final String RAW_VALUE_4 = "nested ${" + KEY_3 + "} variables";
     private static final String EVAL_NOREC_VALUE_4 = "nested " + RAW_VALUE_3 + " variables";
     private static final String EVAL_REC_VALUE_4 = "nested " + EVAL_VALUE_3 + " variables";
+
+    /*
+     * Key5 contains an invalid reference and a direct reference to Key1.
+     */
+    private static final String KEY_5 = "test5";
+    private static final String RAW_VALUE_5 = "invalid ${reference} and " + KEY_1_VAR;
+    private static final String EVAL_VALUE_5 = "invalid ${reference} and " + EVAL_VALUE_1;
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
@@ -87,6 +107,15 @@ public class DefaultEvaluatorTest
                             EVAL_REC_VALUE_4,
                             computedEval);
     }
+    
+    @Test
+    public void testEvaluateWithInvalidReference()
+    {
+        String computedEval = evaluator.evaluate(RAW_VALUE_5, retriever);
+        Assert.assertEquals("The computed value of \"" + RAW_VALUE_5 + "\" was not correct",
+                            EVAL_VALUE_5,
+                            computedEval);
+    }
 
     @Test
     public void testReferenceAt()
@@ -98,7 +127,7 @@ public class DefaultEvaluatorTest
         Assert.assertEquals("Substring of \""
                                     + RAW_VALUE_3
                                     + "\" using computed start/end positions does not match expected",
-                            RAW_VALUE_3_KEY_1_VAR,
+                            KEY_1_VAR,
                             RAW_VALUE_3.substring(variable.getStartPosition(),
                                                   variable.getEndPosition()));
     }
