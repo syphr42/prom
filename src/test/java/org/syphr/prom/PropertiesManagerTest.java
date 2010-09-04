@@ -207,10 +207,33 @@ public class PropertiesManagerTest
                           test2Manager.keySet()
                                       .containsAll(EnumSet.allOf(Key2.class)));
     }
+    
+    @Test
+    public void testIsLoadedFalse()
+    {
+        PropertiesManager<Key1> prom = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class);
+        Assert.assertFalse("Manager incorrectly reported that it was loaded", prom.isLoaded());
+    }
+    
+    @Test
+    public void testIsLoadedTrue() throws IOException
+    {
+        PropertiesManager<Key1> prom = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class);
+        prom.load();
+        
+        Assert.assertTrue("Manager incorrectly reported that it was not loaded", prom.isLoaded());
+    }
+    
+    @Test(expected=IllegalStateException.class)
+    public void testEnsureLoaded() throws IOException
+    {
+        PropertiesManager<Key1> prom = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class);
+        prom.getProperty(Key1.SOME_KEY);
+    }
 
     public static enum Key1 implements Defaultable
     {
-        ;
+        SOME_KEY("some key's value!");
 
         private String defaultValue;
 

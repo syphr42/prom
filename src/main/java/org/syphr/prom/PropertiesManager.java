@@ -1032,24 +1032,42 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Ensure that the properties have been loaded.
-     *
+     * Ensure that the manager has initialized its properties. In other words,
+     * if {@link #isLoaded()} returns <code>true</code>, this method will do
+     * nothing. If {@link #isLoaded()} returns <code>false</code>, this method
+     * will throw an exception.
+     * 
+     * @see #isLoaded()
      * @see #load()
      * @see #loadNB()
-     *
+     * 
      * @throws IllegalStateException
      *             if the properties have not yet been loaded
      */
     private void ensureLoaded() throws IllegalStateException
     {
-        switch (properties.getStatus())
+        if (!isLoaded())
         {
-            case INITIALIZED:
-                return;
-
-            case UNINITIALIZED:
-                throw new IllegalStateException("Illegal access: properties have not yet been loaded");
+            throw new IllegalStateException("Illegal access: properties have not yet been loaded");
         }
+    }
+
+    /**
+     * Determine whether or not this instance has initialized its properties. If
+     * this method does not return <code>true</code>, the manager is not in a
+     * state where it can be used until {@link #load()} or {@link #loadNB()} is
+     * called successfully.<br>
+     * <br>
+     * There is no way to unload a manager. Therefore, once an instance has been
+     * loaded, the only way this method could return <code>false</code> is if a
+     * subsequent call to {@link #load()} or {@link #loadNB()} fails.
+     * 
+     * @return <code>true</code> if this manager has initialized its properties;
+     *         <code>false</code> otherwise
+     */
+    public boolean isLoaded()
+    {
+        return Status.INITIALIZED.equals(properties.getStatus());
     }
 
     /**
