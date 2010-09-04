@@ -230,6 +230,14 @@ public class PropertiesManagerTest
         PropertiesManager<Key1> prom = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class);
         prom.getProperty(Key1.SOME_KEY);
     }
+    
+    @Test
+    public void testManagedPropertiesCached()
+    {
+        Assert.assertSame("Single property managers are not cached correctly",
+                          test1Manager.getManagedProperty(Key1.SOME_KEY),
+                          test1Manager.getManagedProperty(Key1.SOME_KEY));
+    }
 
     public static enum Key1 implements Defaultable
     {
