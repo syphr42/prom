@@ -238,6 +238,37 @@ public class PropertiesManagerTest
                           test1Manager.getManagedProperty(Key1.SOME_KEY),
                           test1Manager.getManagedProperty(Key1.SOME_KEY));
     }
+    
+    @Test
+    public void testSetPropertyString()
+    {
+        final String value = "a non-default value";
+        test1Manager.setProperty(Key1.SOME_KEY, value);
+        Assert.assertEquals("Failed to set string property",
+                            value,
+                            test1Manager.getProperty(Key1.SOME_KEY));
+    }
+
+    @Test
+    public void testSetPropertyEnum()
+    {
+        final Color value = Color.BLUE;
+        test1Manager.setProperty(Key1.SOME_KEY, value);
+        Assert.assertEquals("Failed to set Enum property",
+                            value,
+                            test1Manager.getEnumProperty(Key1.SOME_KEY,
+                                                         Color.class));
+    }
+    
+    @Test
+    public void testResetPropertyToDefault()
+    {
+        test1Manager.setProperty(Key1.SOME_KEY, "a non-default value");
+        test1Manager.resetProperty(Key1.SOME_KEY);
+        Assert.assertEquals("Failed to reset an individual property",
+                            Key1.SOME_KEY.getDefaultValue(),
+                            test1Manager.getProperty(Key1.SOME_KEY));
+    }
 
     public static enum Key1 implements Defaultable
     {
