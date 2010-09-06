@@ -203,4 +203,32 @@ import java.util.List;
 
         return stack.get(++currentLoc);
     }
+
+    /**
+     * Empty the stack and re-initialize it with what was the
+     * {@link #getCurrentValue() current value} before the stack was cleared.
+     * 
+     * @return the new {@link #getCurrentValue() current value}
+     */
+    public synchronized T clear()
+    {
+        return clear(getCurrentValue());
+    }
+
+    /**
+     * Empty the stack and re-initialize it with the given value.
+     * 
+     * @param value
+     *            the value to initialize the cleared stack
+     * @return the new {@link #getCurrentValue() current value}
+     */
+    public synchronized T clear(T value)
+    {
+        stack.clear();
+        stack.add(value);
+
+        currentLoc = savedLoc = 0;
+
+        return value;
+    }
 }

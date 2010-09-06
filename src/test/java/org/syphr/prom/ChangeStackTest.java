@@ -25,22 +25,24 @@ public class ChangeStackTest
     private static final String INITIAL_VALUE = "initial value";
     private static final String VALUE_1 = "value 1";
     private static final String VALUE_2 = "value 2";
-    
+
     private ChangeStack<String> stack;
-    
+
     @Before
     public void setup()
     {
         stack = new ChangeStack<String>(INITIAL_VALUE);
     }
-    
+
     @Test
     public void testIsModified()
     {
-        Assert.assertFalse("Stack incorrectly reports modification", stack.isModified());
-        
+        Assert.assertFalse("Stack incorrectly reports modification",
+                           stack.isModified());
+
         stack.push(VALUE_1);
-        Assert.assertTrue("Stack incorrectly reports no modification", stack.isModified());
+        Assert.assertTrue("Stack incorrectly reports no modification",
+                          stack.isModified());
     }
 
     @Test
@@ -79,7 +81,7 @@ public class ChangeStackTest
         Assert.assertTrue("Undo should be possible before modification",
                           stack.isUndoPossible());
     }
-    
+
     @Test
     public void testUndo()
     {
@@ -88,7 +90,7 @@ public class ChangeStackTest
                             INITIAL_VALUE,
                             stack.undo());
     }
-    
+
     @Test
     public void testUndoNotPossible()
     {
@@ -96,7 +98,7 @@ public class ChangeStackTest
                             stack.getCurrentValue(),
                             stack.undo());
     }
-    
+
     @Test
     public void testIsRedoPossible()
     {
@@ -123,12 +125,50 @@ public class ChangeStackTest
                             VALUE_1,
                             stack.redo());
     }
-    
+
     @Test
     public void testRedoNotPossible()
     {
         Assert.assertEquals("Value should equal current because redo is not possible",
                             stack.getCurrentValue(),
                             stack.redo());
+    }
+
+    @Test
+    public void testClear()
+    {
+        stack.push(VALUE_1);
+
+        Assert.assertEquals("Return value should be the current value before clear",
+                            stack.getCurrentValue(),
+                            stack.clear());
+        Assert.assertEquals("After clear, value should be the current value before clear",
+                            VALUE_1,
+                            stack.getCurrentValue());
+        Assert.assertFalse("Undo should not be possible after clear",
+                           stack.isUndoPossible());
+        Assert.assertFalse("Redo should not be possible after clear",
+                           stack.isRedoPossible());
+        Assert.assertFalse("Stack should not be in a modified state after clear",
+                           stack.isModified());
+    }
+
+    @Test
+    public void testClearWithValue()
+    {
+        stack.push(VALUE_1);
+
+        Assert.assertEquals("Return value should be the given value",
+                            VALUE_2,
+                            stack.clear(VALUE_2));
+        Assert.assertEquals("After clear, value should be the given value",
+                            VALUE_2,
+                            stack.getCurrentValue());
+        Assert.assertFalse("Undo should not be possible after clear",
+                           stack.isUndoPossible());
+        Assert.assertFalse("Redo should not be possible after clear",
+                           stack.isRedoPossible());
+        Assert.assertFalse("Stack should not be in a modified state after clear",
+                           stack.isModified());
     }
 }
