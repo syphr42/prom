@@ -23,13 +23,13 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class PropertyChangeStackTest
+public class ChangeStackTest
 {
     private static File TEST_DATA_DIR = new File("target/test-data");
-    private static File TEST_PROPS = new File(TEST_DATA_DIR, PropertyChangeStack.class.getSimpleName() + ".properties");
+    private static File TEST_PROPS = new File(TEST_DATA_DIR, ChangeStack.class.getSimpleName() + ".properties");
     
     private ManagedProperty<Key> manager;
-    private PropertyChangeStack<Key> stack;
+    private ChangeStack<String> stack;
     
     @Before
     public void setup() throws IOException
@@ -38,9 +38,34 @@ public class PropertyChangeStackTest
         mainManager.load();
         
         manager = mainManager.getManagedProperty(Key.SOME_KEY);
-        stack = new PropertyChangeStack<Key>();
+        stack = new ChangeStack<String>(manager.getRawProperty());
         
-        stack.register(manager);
+        manager.addPropertyListener(new PropertyListener<Key>()
+        {
+            @Override
+            public void changed(PropertyEvent<Key> event)
+            {
+                stack.push(event.getSource().getRawProperty(event.getProperty()));
+            }
+
+            @Override
+            public void loaded(PropertyEvent<Key> event)
+            {
+                stack.push(event.getSource().getRawProperty(event.getProperty()));
+            }
+
+            @Override
+            public void reset(PropertyEvent<Key> event)
+            {
+                stack.push(event.getSource().getRawProperty(event.getProperty()));
+            }
+
+            @Override
+            public void saved(PropertyEvent<Key> event)
+            {
+                stack.saved();
+            }
+        });
     }
     
     @Test

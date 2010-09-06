@@ -22,85 +22,46 @@ import java.util.List;
 // TODO need a history limit
 
 /**
- * This class provide a stack of changes to a single property with the ability
- * to move back and forth through the stack.
+ * This class provide a stack of changes with the ability to move back and forth
+ * through the stack.
  * 
  * @param <T>
- *            the type of the Enum that represents the property keys used by the
- *            manager to which an instance of this class will be registered
+ *            the type of element tracked by this stack
  * 
  * @author Gregory P. Moyer
  */
-/* default */class PropertyChangeStack<T extends Enum<T>>
+/* default */class ChangeStack<T>
 {
     /**
      * The stack of changes being tracked.
      */
-    private final List<String> stack = new ArrayList<String>();
+    private final List<T> stack;
 
     /**
      * The current location in the stack. This will change as operations are
      * performed (such as changing the value, undoing a change, or redoing a
      * change).
      */
-    private int currentLoc = -1;
+    private int currentLoc;
 
     /**
      * The location of the last value that was saved. When a save event occurs,
      * this will be updated to the current location. It is assumed that this is
      * the current location at the time the stack is registered.
      */
-    private int savedLoc = -1;
+    private int savedLoc;
 
     /**
-     * Register this stack with the given manager. One registration has
-     * occurred, this instance may not be registered again to either the same
-     * manager or any other.
+     * Create a new stack with the given initial value.
      * 
-     * @param manager
-     *            the manager to which this instance will listen for events
-     * @throws IllegalStateException
-     *             if this stack has already been registered
+     * @param value
+     *            the initial value of this stack (it is assumed that this is
+     *            also the last saved value)
      */
-    public synchronized void register(ManagedProperty<T> manager) throws IllegalStateException
+    public ChangeStack(T value)
     {
-        if (currentLoc >= 0)
-        {
-            throw new IllegalStateException("The stack has already been registered");
-        }
-
-        manager.addPropertyListener(new PropertyListener<T>()
-        {
-            @Override
-            public void changed(PropertyEvent<T> event)
-            {
-                push(event.getSource().getProperty(event.getProperty()));
-            }
-
-            @Override
-            public void loaded(PropertyEvent<T> event)
-            {
-                push(event.getSource().getProperty(event.getProperty()));
-            }
-
-            @Override
-            public void reset(PropertyEvent<T> event)
-            {
-                push(event.getSource().getProperty(event.getProperty()));
-            }
-
-            @Override
-            public void saved(PropertyEvent<T> event)
-            {
-                synchronized (PropertyChangeStack.this)
-                {
-                    savedLoc = currentLoc;
-                }
-            }
-        });
-
-        stack.add(manager.getRawProperty());
-        savedLoc = ++currentLoc;
+        stack = new ArrayList<T>();
+        stack.add(value);
     }
 
     /**
@@ -115,7 +76,7 @@ import java.util.List;
      * @throws NullPointerException
      *             if the given value is <code>null</code>
      */
-    private synchronized void push(String value) throws NullPointerException
+    public synchronized void push(T value) throws NullPointerException
     {
         if (value.equals(getCurrentValue()))
         {
@@ -124,7 +85,7 @@ import java.util.List;
 
         if (stack.size() > currentLoc + 1)
         {
-            Iterator<String> iter = stack.listIterator(currentLoc + 1);
+            Iterator<T> iter = stack.listIterator(currentLoc + 1);
             while (iter.hasNext())
             {
                 iter.next();
@@ -134,6 +95,16 @@ import java.util.List;
 
         stack.add(value);
         currentLoc++;
+    }
+
+    /**
+     * Record that the current location has been saved. It is guaranteed that
+     * after this method completes and before any other methods in this class
+     * are called, {@link #isModified()} will return <code>false</code>.
+     */
+    public synchronized void saved()
+    {
+        savedLoc = currentLoc;
     }
 
     /**
@@ -157,7 +128,7 @@ import java.util.List;
      * 
      * @return the current value
      */
-    public synchronized String getCurrentValue()
+    public synchronized T getCurrentValue()
     {
         return stack.get(currentLoc);
     }
@@ -168,7 +139,7 @@ import java.util.List;
      * 
      * @return the saved value
      */
-    public synchronized String getSavedValue()
+    public synchronized T getSavedValue()
     {
         return stack.get(savedLoc);
     }
@@ -203,7 +174,7 @@ import java.util.List;
      * 
      * @return the new {@link #getCurrentValue() current value}
      */
-    public synchronized String undo()
+    public synchronized T undo()
     {
         if (!isUndoPossible())
         {
@@ -221,7 +192,7 @@ import java.util.List;
      * 
      * @return the new {@link #getCurrentValue() current value}
      */
-    public synchronized String redo()
+    public synchronized T redo()
     {
         if (!isRedoPossible())
         {
