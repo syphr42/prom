@@ -15,9 +15,6 @@
  */
 package org.syphr.prom;
 
-import java.io.File;
-import java.io.IOException;
-
 import junit.framework.Assert;
 
 import org.junit.Before;
@@ -25,47 +22,16 @@ import org.junit.Test;
 
 public class ChangeStackTest
 {
-    private static File TEST_DATA_DIR = new File("target/test-data");
-    private static File TEST_PROPS = new File(TEST_DATA_DIR, ChangeStack.class.getSimpleName() + ".properties");
+    private static final String INITIAL_VALUE = "initial value";
+    private static final String VALUE_1 = "value 1";
+    private static final String VALUE_2 = "value 2";
     
-    private ManagedProperty<Key> manager;
     private ChangeStack<String> stack;
     
     @Before
-    public void setup() throws IOException
+    public void setup()
     {
-        PropertiesManager<Key> mainManager = PropertiesManagers.newManager(TEST_PROPS, Key.class);
-        mainManager.load();
-        
-        manager = mainManager.getManagedProperty(Key.SOME_KEY);
-        stack = new ChangeStack<String>(manager.getRawProperty());
-        
-        manager.addPropertyListener(new PropertyListener<Key>()
-        {
-            @Override
-            public void changed(PropertyEvent<Key> event)
-            {
-                stack.push(event.getSource().getRawProperty(event.getProperty()));
-            }
-
-            @Override
-            public void loaded(PropertyEvent<Key> event)
-            {
-                stack.push(event.getSource().getRawProperty(event.getProperty()));
-            }
-
-            @Override
-            public void reset(PropertyEvent<Key> event)
-            {
-                stack.push(event.getSource().getRawProperty(event.getProperty()));
-            }
-
-            @Override
-            public void saved(PropertyEvent<Key> event)
-            {
-                stack.saved();
-            }
-        });
+        stack = new ChangeStack<String>(INITIAL_VALUE);
     }
     
     @Test
@@ -73,7 +39,7 @@ public class ChangeStackTest
     {
         Assert.assertFalse("Stack incorrectly reports modification", stack.isModified());
         
-        manager.setProperty("some other value");
+        stack.push(VALUE_1);
         Assert.assertTrue("Stack incorrectly reports no modification", stack.isModified());
     }
 
@@ -81,13 +47,12 @@ public class ChangeStackTest
     public void testGetCurrentValue()
     {
         Assert.assertEquals("Incorrect current value before modification",
-                            Key.SOME_KEY.getDefaultValue(),
+                            INITIAL_VALUE,
                             stack.getCurrentValue());
 
-        final String value = "some other value";
-        manager.setProperty(value);
+        stack.push(VALUE_1);
         Assert.assertEquals("Incorrect current value after modification",
-                            value,
+                            VALUE_1,
                             stack.getCurrentValue());
     }
 
@@ -95,35 +60,32 @@ public class ChangeStackTest
     public void testGetSavedValue()
     {
         Assert.assertEquals("Incorrect saved value before modification",
-                            Key.SOME_KEY.getDefaultValue(),
+                            INITIAL_VALUE,
                             stack.getSavedValue());
 
-        final String value = "some other value";
-        manager.setProperty(value);
+        stack.push(VALUE_1);
         Assert.assertEquals("Incorrect saved value before modification",
-                            Key.SOME_KEY.getDefaultValue(),
+                            INITIAL_VALUE,
                             stack.getSavedValue());
     }
-    
+
     @Test
     public void testIsUndoPossible()
     {
         Assert.assertFalse("Undo should not be possible before modification",
-                            stack.isUndoPossible());
+                           stack.isUndoPossible());
 
-        final String value = "some other value";
-        manager.setProperty(value);
+        stack.push(VALUE_1);
         Assert.assertTrue("Undo should be possible before modification",
-                            stack.isUndoPossible());
+                          stack.isUndoPossible());
     }
     
     @Test
     public void testUndo()
     {
-        final String value = "some other value";
-        manager.setProperty(value);
+        stack.push(VALUE_1);
         Assert.assertEquals("Value should equal original value after undo",
-                            Key.SOME_KEY.getDefaultValue(),
+                            INITIAL_VALUE,
                             stack.undo());
     }
     
@@ -138,8 +100,7 @@ public class ChangeStackTest
     @Test
     public void testIsRedoPossible()
     {
-        final String value1 = "some other value";
-        manager.setProperty(value1);
+        stack.push(VALUE_1);
         Assert.assertFalse("Redo should not be possible before undo",
                            stack.isRedoPossible());
 
@@ -147,8 +108,7 @@ public class ChangeStackTest
         Assert.assertTrue("Redo should be possible after undo without further modification",
                           stack.isRedoPossible());
 
-        final String value2 = "some new value";
-        manager.setProperty(value2);
+        stack.push(VALUE_2);
         Assert.assertFalse("Redo should not be possible after modification",
                            stack.isRedoPossible());
     }
@@ -156,12 +116,11 @@ public class ChangeStackTest
     @Test
     public void testRedo()
     {
-        final String value = "some other value";
-        manager.setProperty(value);
+        stack.push(VALUE_1);
         stack.undo();
 
         Assert.assertEquals("Value should equal new value after redo",
-                            value,
+                            VALUE_1,
                             stack.redo());
     }
     
@@ -171,23 +130,5 @@ public class ChangeStackTest
         Assert.assertEquals("Value should equal current because redo is not possible",
                             stack.getCurrentValue(),
                             stack.redo());
-    }
-    
-    public static enum Key implements Defaultable
-    {
-        SOME_KEY("some key's value!");
-
-        private String defaultValue;
-
-        private Key(String defaultValue)
-        {
-            this.defaultValue = defaultValue;
-        }
-
-        @Override
-        public String getDefaultValue()
-        {
-            return defaultValue;
-        }
     }
 }
