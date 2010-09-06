@@ -24,6 +24,7 @@ import java.util.EnumSet;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -119,14 +120,19 @@ public class PropertiesManagerTest
 
     private PropertiesManager<Key1> test1Manager;
     private PropertiesManager<Key2> test2Manager;
+    
+    private EventMonitor<Key1> monitor1;
+    private EventMonitor<Key2> monitor2;
 
     @Before
     public void setUp() throws IOException
     {
         test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, TRANSLATOR1, EXECUTOR);
+        test1Manager.addPropertyListener(monitor1 = new EventMonitor<Key1>());
         test1Manager.load();
 
         test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, TEST_PROPS_2_DEFAULT, Key2.class, EXECUTOR);
+        test2Manager.addPropertyListener(monitor2 = new EventMonitor<Key2>());
         test2Manager.load();
     }
 
@@ -268,6 +274,92 @@ public class PropertiesManagerTest
         Assert.assertEquals("Failed to reset an individual property",
                             Key1.SOME_KEY.getDefaultValue(),
                             test1Manager.getProperty(Key1.SOME_KEY));
+    }
+    
+    @Test
+    public void testEventNotSentWhenSetDoesNotChangeValue()
+    {
+        test1Manager.setProperty(Key1.SOME_KEY, Key1.SOME_KEY.getDefaultValue());
+        Assert.assertFalse("Invalid event generated", monitor1.isChanged());
+    }
+    
+    @Test
+    public void testEventNotSentWhenResetDoesNotChangeValue()
+    {
+        test1Manager.resetProperty(Key1.SOME_KEY);
+        Assert.assertFalse("Invalid event generated", monitor1.isReset());
+    }
+    
+    public static class EventMonitor<T extends Enum<T>> implements PropertyListener<T>
+    {
+        private final AtomicInteger saved = new AtomicInteger(0);
+        private final AtomicInteger reset = new AtomicInteger(0);
+        private final AtomicInteger loaded = new AtomicInteger(0);
+        private final AtomicInteger changed = new AtomicInteger(0);
+        
+        @Override
+        public void saved(PropertyEvent<T> event)
+        {
+            saved.getAndIncrement();
+        }
+        
+        @Override
+        public void reset(PropertyEvent<T> event)
+        {
+            reset.getAndIncrement();
+        }
+        
+        @Override
+        public void loaded(PropertyEvent<T> event)
+        {
+            loaded.getAndIncrement();
+        }
+        
+        @Override
+        public void changed(PropertyEvent<T> event)
+        {
+            changed.getAndIncrement();
+        }
+
+        public boolean isSaved()
+        {
+            return getSavedCount() > 0;
+        }
+
+        public boolean isReset()
+        {
+            return getResetCount() > 0;
+        }
+
+        public boolean isLoaded()
+        {
+            return getLoadedCount() > 0;
+        }
+
+        public boolean isChanged()
+        {
+            return getChangedCount() > 0;
+        }
+        
+        public int getSavedCount()
+        {
+            return saved.get();
+        }
+        
+        public int getResetCount()
+        {
+            return reset.get();
+        }
+        
+        public int getLoadedCount()
+        {
+            return loaded.get();
+        }
+        
+        public int getChangedCount()
+        {
+            return changed.get();
+        }
     }
 
     public static enum Key1 implements Defaultable
