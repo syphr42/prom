@@ -21,8 +21,6 @@ import java.util.List;
 
 // TODO need a history limit
 
-// TODO is*Possible() methods are somewhat useless because a change could occur between checking and doing - probably need to make these atomic
-
 /**
  * This class provide a stack of changes to a single property with the ability
  * to move back and forth through the stack.
