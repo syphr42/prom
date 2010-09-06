@@ -16,15 +16,11 @@
 package org.syphr.prom;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -97,15 +93,6 @@ public class PropertiesManager<T extends Enum<T>>
     private final ManagedProperties properties;
 
     /**
-     * A flag to determine whether or not default values are stored to the file when
-     * saved. The default value is <code>false</code>.
-     *
-     * @see #isSavingDefaults()
-     * @see #setSavingDefaults(boolean)
-     */
-    private boolean savingDefaults;
-
-    /**
      * A flag that determines whether or not property values are automatically trimmed as
      * they are read. The default is <code>true</code>.
      *
@@ -152,27 +139,7 @@ public class PropertiesManager<T extends Enum<T>>
         this.evaluator = evaluator;
         this.executor = executor;
 
-        properties = new ManagedProperties(copyProperties(defaults));
-    }
-
-    /**
-     * Copy the given properties to a new object.
-     *
-     * @param source
-     *            the source from which to copy
-     * @return a copy of the source or <code>null</code> if the source is
-     *         <code>null</code>
-     */
-    private Properties copyProperties(Properties source)
-    {
-        Properties copy = new Properties();
-
-        if (source != null)
-        {
-            copy.putAll(source);
-        }
-
-        return copy;
+        properties = new ManagedProperties(defaults);
     }
 
     /**
@@ -184,7 +151,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public void setSavingDefaults(boolean savingDefaults)
     {
-        this.savingDefaults = savingDefaults;
+        properties.setSavingDefaults(savingDefaults);
     }
 
     /**
@@ -196,7 +163,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public boolean isSavingDefaults()
     {
-        return savingDefaults;
+        return properties.isSavingDefaults();
     }
 
     /**
@@ -329,14 +296,13 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public Properties getProperties() throws IllegalStateException
     {
-        ensureLoaded();
         return properties.getProperties();
     }
 
     /**
      * Retrieve the set of keys currently in use by this manager. This encompasses any key
      * which currently has a value or a default value associated with it. Normally, this
-     * should have the same contents as {@link EnumSet#allOf(Class)}, but it is not
+     * should have the same contents as {@link EnumSet#allOf(T)}, but it is not
      * guaranteed.<br>
      * <br>
      * An example of where this set would not have the same contents as the set of Enums
@@ -351,23 +317,18 @@ public class PropertiesManager<T extends Enum<T>>
     {
         Set<T> keys = new TreeSet<T>();
 
-        ensureLoaded();
-
-        synchronized (properties)
+        for (String propertyName : properties.getPropertyNames())
         {
-            for (String propertyName : properties.stringPropertyNames())
+            try
             {
-                try
-                {
-                    keys.add(getTranslator().getPropertyKey(propertyName));
-                }
-                catch (IllegalArgumentException e)
-                {
-                    /*
-                     * Skip unknown properties.
-                     */
-                    continue;
-                }
+                keys.add(getTranslator().getPropertyKey(propertyName));
+            }
+            catch (IllegalArgumentException e)
+            {
+                /*
+                 * Skip unknown properties.
+                 */
+                continue;
             }
         }
 
@@ -550,14 +511,8 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public String getRawProperty(T property) throws IllegalStateException
     {
-        ensureLoaded();
-
         String propertyName = getTranslator().getPropertyName(property);
-        String value;
-        synchronized (properties)
-        {
-            value = properties.getProperty(propertyName);
-        }
+        String value = properties.getProperty(propertyName);
 
         if (value != null && isAutoTrim())
         {
@@ -594,16 +549,13 @@ public class PropertiesManager<T extends Enum<T>>
      * @param property
      *            the property whose default value is requested
      * @return the default raw value of the given property
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    private String getRawDefaultProperty(T property) throws IllegalStateException
+    private String getRawDefaultProperty(T property)
     {
-        ensureLoaded();
+        String propertyName = getTranslator().getPropertyName(property);
+        String value = properties.getDefaultValue(propertyName);
 
-        String value = properties.getDefaultValue(getTranslator().getPropertyName(property));
-
-        if (isAutoTrim())
+        if (value != null && isAutoTrim())
         {
             value = value.trim();
         }
@@ -710,12 +662,7 @@ public class PropertiesManager<T extends Enum<T>>
             @Override
             public Void call() throws Exception
             {
-                synchronized (properties)
-                {
-                    properties.clear();
-                    properties.load(getFile());
-                }
-
+                properties.load(getFile());
                 firePropertiesLoaded();
                 return null;
             }
@@ -801,34 +748,11 @@ public class PropertiesManager<T extends Enum<T>>
             throw new IllegalArgumentException("Cannot set a null value, use reset instead");
         }
 
-        ensureLoaded();
-
-        final String propertyName = getTranslator().getPropertyName(property);
-        synchronized (properties)
+        String propertyName = getTranslator().getPropertyName(property);
+        if (properties.setProperty(propertyName, value))
         {
-            /*
-             * If the new value is the same as the old, then there is nothing to do.
-             */
-            Object previousValue = properties.getProperty(propertyName);
-            if (value.equals(previousValue))
-            {
-                return;
-            }
-
-            /*
-             * If the new value is the default and we aren't saving defaults, remove it.
-             */
-            if (!isSavingDefaults() && value.equals(properties.getDefaultValue(propertyName)))
-            {
-                properties.remove(propertyName);
-            }
-            else
-            {
-                properties.setProperty(propertyName, value);
-            }
+            firePropertyChanged(property);
         }
-
-        firePropertyChanged(property);
     }
 
     /**
@@ -939,19 +863,7 @@ public class PropertiesManager<T extends Enum<T>>
             @Override
             public Void call() throws Exception
             {
-                synchronized (properties)
-                {
-                    FileOutputStream outputStream = new FileOutputStream(getFile());
-                    try
-                    {
-                        properties.store(outputStream, comment);
-                    }
-                    finally
-                    {
-                        outputStream.close();
-                    }
-                }
-
+                properties.save(getFile(), comment);
                 firePropertiesSaved();
                 return null;
             }
@@ -971,22 +883,12 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public void resetProperty(T property) throws IllegalStateException
     {
-        ensureLoaded();
-
         String propertyName = getTranslator().getPropertyName(property);
-        synchronized (properties)
+
+        if (properties.resetToDefault(propertyName))
         {
-            Object previousValue = properties.get(propertyName);
-            if (previousValue == null
-                || previousValue.equals(properties.getDefaultValue(propertyName)))
-            {
-                return;
-            }
-
-            properties.resetToDefault(propertyName, isSavingDefaults());
+            firePropertyReset(property);            
         }
-
-        firePropertyReset(property);
     }
 
     /**
@@ -994,7 +896,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public void reset()
     {
-        properties.resetToDefaults(isSavingDefaults());
+        properties.resetToDefaults();
         firePropertiesReset();
     }
 
@@ -1032,27 +934,6 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Ensure that the manager has initialized its properties. In other words,
-     * if {@link #isLoaded()} returns <code>true</code>, this method will do
-     * nothing. If {@link #isLoaded()} returns <code>false</code>, this method
-     * will throw an exception.
-     * 
-     * @see #isLoaded()
-     * @see #load()
-     * @see #loadNB()
-     * 
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
-     */
-    private void ensureLoaded() throws IllegalStateException
-    {
-        if (!isLoaded())
-        {
-            throw new IllegalStateException("Illegal access: properties have not yet been loaded");
-        }
-    }
-
-    /**
      * Determine whether or not this instance has initialized its properties. If
      * this method does not return <code>true</code>, the manager is not in a
      * state where it can be used until {@link #load()} or {@link #loadNB()} is
@@ -1067,7 +948,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public boolean isLoaded()
     {
-        return Status.INITIALIZED.equals(properties.getStatus());
+        return properties.isLoaded();
     }
 
     /**
@@ -1154,214 +1035,5 @@ public class PropertiesManager<T extends Enum<T>>
     private void firePropertiesReset()
     {
         firePropertyReset(null);
-    }
-
-    /**
-     * This class provides API in addition to the standard {@link Properties} API to allow
-     * easier management of the properties within as they pertain to an actual file on the
-     * file system and the lifecycle of load/modify/save.
-     *
-     * @author Gregory P. Moyer
-     */
-    private static class ManagedProperties extends Properties
-    {
-        /**
-         * Serialization ID
-         */
-        private static final long serialVersionUID = 1L;
-
-        /**
-         * A marker that indicates the initialization status of this instance.
-         * In other words, have the properties been read from a resource (i.e.
-         * file or stream), did reading the properties fail, etc.
-         */
-        private volatile Status status = Status.UNINITIALIZED;
-
-        /**
-         * Construct a new managed instance.
-         *
-         * @param defaults
-         *            the default values
-         */
-        public ManagedProperties(Properties defaults)
-        {
-            super(defaults);
-        }
-
-        /**
-         * Determine the current initialization status of this instance.
-         *
-         * @return the initialization status
-         */
-        public Status getStatus()
-        {
-            return status;
-        }
-
-        /**
-         * Load the given file.
-         *
-         * @param file
-         *            the file containing the current property values (this file
-         *            does not have to exist)
-         * @throws IOException
-         *             if there is a file system error while attempting to read
-         *             the file
-         */
-        public synchronized void load(File file) throws IOException
-        {
-            status = Status.UNINITIALIZED;
-
-            /*
-             * We do not want to throw a FileNotFoundException here because it
-             * is OK if the file does not exist. In this case, default values
-             * will be used.
-             */
-            if (file.isFile())
-            {
-                InputStream inputStream = new FileInputStream(file);
-                try
-                {
-                    load(inputStream);
-                }
-                finally
-                {
-                    inputStream.close();
-                }
-            }
-
-            status = Status.INITIALIZED;
-        }
-
-        /**
-         * Get the default value for the given key.
-         *
-         * @param key
-         *            the key whose associated default value is requested
-         * @return the default value for the given key or <code>null</code> if there is no
-         *         default value
-         */
-        public synchronized String getDefaultValue(String key)
-        {
-            return defaults.getProperty(key);
-        }
-
-        /**
-         * Reset the value associated with specified key to its default value.
-         *
-         * @param key
-         *            the key whose associated value should be reset
-         * @param savingDefaults
-         *            a flag to determine whether or not default values are being saved to
-         *            the file system
-         */
-        public synchronized void resetToDefault(String key, boolean savingDefaults)
-        {
-            if (savingDefaults)
-            {
-                setProperty(key, defaults.getProperty(key));
-            }
-            else
-            {
-                remove(key);
-            }
-        }
-
-        /**
-         * Reset all values to the default values.
-         *
-         * @param savingDefaults
-         *            a flag that determines whether or not default values should be part
-         *            of the main properties or left as a separate set (as a separate set,
-         *            they will not be written to the file system when the properties are
-         *            written)
-         */
-        public synchronized void resetToDefaults(boolean savingDefaults)
-        {
-            super.clear();
-
-            if (savingDefaults)
-            {
-                for (Entry<?, ?> entry : defaults.entrySet())
-                {
-                    put(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-
-        @Override
-        public synchronized void clear()
-        {
-            status = Status.UNINITIALIZED;
-            super.clear();
-        }
-
-        /**
-         * Retrieve a {@link Properties} instance that contains the properties managed by
-         * this instance.<br>
-         * <br>
-         * Please note that the returned {@link Properties} instance is not connected in
-         * any way to this instance and is only a snapshot of what the properties looked
-         * like at the time the request was fulfilled.
-         *
-         * @return a {@link Properties} instance containing the properties managed by this
-         *         instance
-         */
-        public synchronized Properties getProperties()
-        {
-            Properties propertiesDefaults = new Properties();
-            propertiesDefaults.putAll(defaults);
-
-            Properties properties = new Properties(propertiesDefaults);
-            properties.putAll(this);
-
-            return properties;
-        }
-
-        /*
-         * Overridden for documentation purposes. No additional fields necessary from the
-         * super.
-         */
-        @Override
-        public synchronized int hashCode()
-        {
-            return super.hashCode();
-        }
-
-        /*
-         * Overridden for documentation purposes. No additional fields necessary from the
-         * super.
-         */
-        @Override
-        public synchronized boolean equals(Object o)
-        {
-            return super.equals(o);
-        }
-    }
-
-    /**
-     * This Enum provides the possible states that a {@link ManagedProperties}
-     * instance can occupy.
-     *
-     * @author Gregory P. Moyer
-     */
-    private static enum Status
-    {
-        /**
-         * The properties file has not yet been read and so no values should be
-         * used in the properties instance until
-         * {@link ManagedProperties#load(File)} has been called.
-         */
-        UNINITIALIZED,
-
-        /**
-         * The properties object has been initialized. This does not mean that
-         * it read any properties from the file (because it is OK if the
-         * properties file does not exist). Instead, this state indicates that
-         * the {@link ManagedProperties#load(File)} was called and completed
-         * successfully. This means that values can be retrieved and set on this
-         * instance.
-         */
-        INITIALIZED,
     }
 }
