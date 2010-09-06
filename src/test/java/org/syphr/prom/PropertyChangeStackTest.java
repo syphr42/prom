@@ -102,10 +102,12 @@ public class PropertyChangeStackTest
                             stack.undo());
     }
     
-    @Test(expected=IllegalStateException.class)
+    @Test
     public void testUndoNotPossible()
     {
-        stack.undo();
+        Assert.assertEquals("Value should equal current because undo is not possible",
+                            stack.getCurrentValue(),
+                            stack.undo());
     }
     
     @Test
@@ -138,10 +140,12 @@ public class PropertyChangeStackTest
                             stack.redo());
     }
     
-    @Test(expected=IllegalStateException.class)
+    @Test
     public void testRedoNotPossible()
     {
-        stack.redo();
+        Assert.assertEquals("Value should equal current because redo is not possible",
+                            stack.getCurrentValue(),
+                            stack.redo());
     }
     
     public static enum Key implements Defaultable

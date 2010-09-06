@@ -101,8 +101,8 @@ import java.util.List;
             }
         });
 
-        push(manager.getRawProperty());
-        savedLoc = currentLoc;
+        stack.add(manager.getRawProperty());
+        savedLoc = ++currentLoc;
     }
 
     /**
@@ -150,7 +150,7 @@ import java.util.List;
      */
     public synchronized boolean isModified()
     {
-        return getCurrentValue().equals(getSavedValue());
+        return !getCurrentValue().equals(getSavedValue());
     }
 
     /**
@@ -199,36 +199,35 @@ import java.util.List;
 
     /**
      * Undo the last modification. After this call completes, {@link #redo()}
-     * may be used until a new modification is made.
+     * may be used until a new modification is made. If undo is not possible,
+     * the {@link #getCurrentValue() current value} will be returned with no
+     * change.
      * 
      * @return the new {@link #getCurrentValue() current value}
-     * @throws IllegalStateException
-     *             if undo is not possible
      */
-    public synchronized String undo() throws IllegalStateException
+    public synchronized String undo()
     {
         if (!isUndoPossible())
         {
-            throw new IllegalStateException("Cannot undo");
+            return getCurrentValue();
         }
 
         return stack.get(--currentLoc);
     }
 
     /**
-     * Redo the last undo. This method can only be used after at least one
-     * successful call to {@link #undo()} and before any new modifications are
-     * made.
+     * Redo the last undo. This method will only have an effect after at least
+     * one successful call to {@link #undo()} and before any new modifications
+     * are made. If redo is not possible, the {@link #getCurrentValue() current
+     * value} will be returned with no change.
      * 
      * @return the new {@link #getCurrentValue() current value}
-     * @throws IllegalStateException
-     *             if redo is not possible
      */
-    public synchronized String redo() throws IllegalStateException
+    public synchronized String redo()
     {
         if (!isRedoPossible())
         {
-            throw new IllegalStateException("Cannot redo");
+            return getCurrentValue();
         }
 
         return stack.get(++currentLoc);
