@@ -22,8 +22,10 @@ import java.util.List;
 // TODO need a history limit
 
 /**
- * This class provide a stack of changes with the ability to move back and forth
- * through the stack.
+ * This class provide a naive stack implementation with the ability to move back
+ * and forth through the stack. It is naive in that it maintains references to
+ * all of the values, not differences between them. However, it is suitable for
+ * simple values, such as primitive wrappers or Strings.
  * 
  * @param <T>
  *            the type of element tracked by this stack
