@@ -277,10 +277,25 @@ public class PropertiesManagerTest
     }
     
     @Test
+    public void testEventSentWhenSetChangesValue()
+    {
+        test1Manager.setProperty(Key1.SOME_KEY, "some non-default value");
+        Assert.assertTrue("Changed event not generated", monitor1.isChanged());
+    }
+    
+    @Test
     public void testEventNotSentWhenSetDoesNotChangeValue()
     {
         test1Manager.setProperty(Key1.SOME_KEY, Key1.SOME_KEY.getDefaultValue());
-        Assert.assertFalse("Invalid event generated", monitor1.isChanged());
+        Assert.assertFalse("Invalid changed event generated", monitor1.isChanged());
+    }
+    
+    @Test
+    public void testEventSentWhenResetChangesValue()
+    {
+        test1Manager.setProperty(Key1.SOME_KEY, "some non-default value");
+        test1Manager.resetProperty(Key1.SOME_KEY);
+        Assert.assertTrue("Reset event not generated", monitor1.isReset());
     }
     
     @Test
