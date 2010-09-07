@@ -302,7 +302,7 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * Retrieve the set of keys currently in use by this manager. This encompasses any key
      * which currently has a value or a default value associated with it. Normally, this
-     * should have the same contents as {@link EnumSet#allOf(T)}, but it is not
+     * should have the same contents as {@link EnumSet#allOf(Class)}, but it is not
      * guaranteed.<br>
      * <br>
      * An example of where this set would not have the same contents as the set of Enums
