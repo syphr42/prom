@@ -23,7 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * This class provides the properties management API of {@link PropertiesManager} with
  * respect to a single property.<br>
  * <br>
- * To get access to an intance of this class, simple use
+ * To get access to an instance of this class, simply use
  * {@link PropertiesManager#getManagedProperty(Enum)}.
  *
  * @param <T>
