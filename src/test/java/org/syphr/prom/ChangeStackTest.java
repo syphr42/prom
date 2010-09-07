@@ -171,4 +171,23 @@ public class ChangeStackTest
         Assert.assertFalse("Stack should not be in a modified state after clear",
                            stack.isModified());
     }
+    
+    @Test
+    public void testSaved()
+    {
+        stack.push(VALUE_1);
+        stack.saved();
+
+        Assert.assertFalse("After saved, stack should not be in a modified state",
+                           stack.isModified());
+    }
+    
+    @Test
+    public void testPushNoModification()
+    {
+        stack.push(stack.getCurrentValue());
+
+        Assert.assertFalse("After pushing a value identical to the current value, no new stack element should be created",
+                           stack.isUndoPossible());
+    }
 }
