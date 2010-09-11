@@ -33,6 +33,18 @@ public class ChangeStackTest
     {
         stack = new ChangeStack<String>(INITIAL_VALUE);
     }
+    
+    @Test
+    public void testPushNoChange()
+    {
+        Assert.assertFalse("Pushed the same value", stack.push(stack.getCurrentValue()));
+    }
+
+    @Test
+    public void testPushChange()
+    {
+        Assert.assertTrue("Pushed a new value", stack.push(VALUE_1));
+    }
 
     @Test
     public void testIsModified()
@@ -183,11 +195,18 @@ public class ChangeStackTest
     }
     
     @Test
-    public void testPushNoModification()
+    public void testPushSameValueNoNewStack()
     {
         stack.push(stack.getCurrentValue());
-
         Assert.assertFalse("After pushing a value identical to the current value, no new stack element should be created",
                            stack.isUndoPossible());
+    }
+    
+    @Test
+    public void testSync()
+    {
+        Assert.assertTrue("Sync'd a new value", stack.sync(VALUE_1));
+        Assert.assertFalse("Stack should not be in a modified state after sync",
+                           stack.isModified());
     }
 }

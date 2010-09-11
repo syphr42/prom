@@ -75,14 +75,16 @@ import java.util.List;
      * 
      * @param value
      *            the new value to push
+     * @return <code>true</code> if {@link #getCurrentValue()} changes as a
+     *         result of this call; <code>false</code> otherwise
      * @throws NullPointerException
      *             if the given value is <code>null</code>
      */
-    public synchronized void push(T value) throws NullPointerException
+    public synchronized boolean push(T value) throws NullPointerException
     {
         if (value.equals(getCurrentValue()))
         {
-            return;
+            return false;
         }
 
         if (stack.size() > currentLoc + 1)
@@ -97,6 +99,34 @@ import java.util.List;
 
         stack.add(value);
         currentLoc++;
+
+        return true;
+    }
+
+    /**
+     * This method behaves exactly like {@link #push(Object)}, except that it
+     * will mark the current value after {@link #push(Object)} as
+     * {@link #saved()}. The marking will happen regardless of whether or not
+     * the {@link #getCurrentValue() current value} changed as a result of this
+     * call.<br>
+     * <br>
+     * To put it another way, it is guaranteed that after this call
+     * {@link #getCurrentValue()} will return the given value and
+     * {@link #isModified()} will return <code>false</code>.
+     * 
+     * @param value
+     *            the new value to push
+     * @return <code>true</code> if {@link #getCurrentValue()} changes as a
+     *         result of this call; <code>false</code> otherwise
+     * @throws NullPointerException
+     *             if the given value is <code>null</code>
+     */
+    public synchronized boolean sync(T value) throws NullPointerException
+    {
+        boolean pushed = push(value);
+        saved();
+
+        return pushed;
     }
 
     /**
