@@ -22,10 +22,10 @@ import java.util.List;
 // TODO need a history limit
 
 /**
- * This class provide a naive stack implementation with the ability to move back
- * and forth through the stack. It is naive in that it maintains references to
- * all of the values, not differences between them. However, it is suitable for
- * simple values, such as primitive wrappers or Strings.
+ * This class provides a naive stack implementation with the ability to move
+ * back and forth through the stack. It is naive in that it maintains references
+ * to all of the values, not differences between them. However, it is suitable
+ * for simple values, such as primitive wrappers or Strings.
  * 
  * @param <T>
  *            the type of element tracked by this stack
@@ -47,11 +47,12 @@ import java.util.List;
     private int currentLoc;
 
     /**
-     * The location of the last value that was saved. When a save event occurs,
-     * this will be updated to the current location. It is assumed that this is
-     * the current location at the time the stack is registered.
+     * The location of the last value that was synchronized. It is up to the
+     * client to determine when this should be set (e.g. what does it mean to be
+     * synchronized). This will equal the current location at the time the stack
+     * is created.
      */
-    private int savedLoc;
+    private int syncLoc;
 
     /**
      * Create a new stack with the given initial value.
@@ -106,7 +107,7 @@ import java.util.List;
     /**
      * This method behaves exactly like {@link #push(Object)}, except that it
      * will mark the current value after {@link #push(Object)} as
-     * {@link #saved()}. The marking will happen regardless of whether or not
+     * {@link #synced()}. The marking will happen regardless of whether or not
      * the {@link #getCurrentValue() current value} changed as a result of this
      * call.<br>
      * <br>
@@ -124,34 +125,34 @@ import java.util.List;
     public synchronized boolean sync(T value) throws NullPointerException
     {
         boolean pushed = push(value);
-        saved();
+        synced();
 
         return pushed;
     }
 
     /**
-     * Record that the current location has been saved. It is guaranteed that
-     * after this method completes and before any other methods in this class
-     * are called, {@link #isModified()} will return <code>false</code>.
+     * Record that the current location has been synchronized. It is guaranteed
+     * that after this method completes {@link #isModified()} will return
+     * <code>false</code>.
      */
-    public synchronized void saved()
+    public synchronized void synced()
     {
-        savedLoc = currentLoc;
+        syncLoc = currentLoc;
     }
 
     /**
-     * Determine whether or not the current value is the same as the saved
+     * Determine whether or not the current value is the same as the synced
      * value. This method will return <code>true</code> if the two values are
-     * equal, even if modifications have been made between the last saved value
+     * equal, even if modifications have been made between the last synced value
      * and the current value.
      * 
      * @return <code>true</code> if the {@link #getCurrentValue() current value}
-     *         is equal to the {@link #getSavedValue() last saved value};
+     *         is equal to the {@link #getSyncedValue() last synced value};
      *         <code>false</code> otherwise
      */
     public synchronized boolean isModified()
     {
-        return !getCurrentValue().equals(getSavedValue());
+        return !getCurrentValue().equals(getSyncedValue());
     }
 
     /**
@@ -166,14 +167,14 @@ import java.util.List;
     }
 
     /**
-     * Retrieve the last saved value for the property to which this stack is
+     * Retrieve the last synced value for the property to which this stack is
      * registered.
      * 
-     * @return the saved value
+     * @return the synced value
      */
-    public synchronized T getSavedValue()
+    public synchronized T getSyncedValue()
     {
-        return stack.get(savedLoc);
+        return stack.get(syncLoc);
     }
 
     /**
@@ -257,7 +258,7 @@ import java.util.List;
         stack.clear();
         stack.add(value);
 
-        currentLoc = savedLoc = 0;
+        currentLoc = syncLoc = 0;
 
         return value;
     }

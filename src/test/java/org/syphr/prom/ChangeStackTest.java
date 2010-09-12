@@ -33,11 +33,12 @@ public class ChangeStackTest
     {
         stack = new ChangeStack<String>(INITIAL_VALUE);
     }
-    
+
     @Test
     public void testPushNoChange()
     {
-        Assert.assertFalse("Pushed the same value", stack.push(stack.getCurrentValue()));
+        Assert.assertFalse("Pushed the same value",
+                           stack.push(stack.getCurrentValue()));
     }
 
     @Test
@@ -71,16 +72,16 @@ public class ChangeStackTest
     }
 
     @Test
-    public void testGetSavedValue()
+    public void testGetSyncedValue()
     {
-        Assert.assertEquals("Incorrect saved value before modification",
+        Assert.assertEquals("Incorrect synced value before modification",
                             INITIAL_VALUE,
-                            stack.getSavedValue());
+                            stack.getSyncedValue());
 
         stack.push(VALUE_1);
-        Assert.assertEquals("Incorrect saved value before modification",
+        Assert.assertEquals("Incorrect synced value before modification",
                             INITIAL_VALUE,
-                            stack.getSavedValue());
+                            stack.getSyncedValue());
     }
 
     @Test
@@ -183,17 +184,17 @@ public class ChangeStackTest
         Assert.assertFalse("Stack should not be in a modified state after clear",
                            stack.isModified());
     }
-    
+
     @Test
-    public void testSaved()
+    public void testSynced()
     {
         stack.push(VALUE_1);
-        stack.saved();
+        stack.synced();
 
-        Assert.assertFalse("After saved, stack should not be in a modified state",
+        Assert.assertFalse("After synced, stack should not be in a modified state",
                            stack.isModified());
     }
-    
+
     @Test
     public void testPushSameValueNoNewStack()
     {
@@ -201,7 +202,7 @@ public class ChangeStackTest
         Assert.assertFalse("After pushing a value identical to the current value, no new stack element should be created",
                            stack.isUndoPossible());
     }
-    
+
     @Test
     public void testSync()
     {
