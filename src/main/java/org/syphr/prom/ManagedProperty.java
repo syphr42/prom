@@ -329,6 +329,14 @@ public class ManagedProperty<T extends Enum<T>>
     {
         manager.resetProperty(propertyKey);
     }
+    
+    /**
+     * Delegate to {@link PropertiesManager#isModified(Enum)}.
+     */
+    public void isModified()
+    {
+        manager.isModified(propertyKey);
+    }
 
     /**
      * Add a new listener to be notified of events relevant to the property managed by

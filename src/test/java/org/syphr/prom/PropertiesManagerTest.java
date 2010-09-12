@@ -210,31 +210,8 @@ public class PropertiesManagerTest
     public void testKeySet()
     {
         Assert.assertTrue("Default keys were not discovered properly",
-                          test2Manager.keySet()
-                                      .containsAll(EnumSet.allOf(Key2.class)));
-    }
-    
-    @Test
-    public void testIsLoadedFalse()
-    {
-        PropertiesManager<Key1> prom = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class);
-        Assert.assertFalse("Manager incorrectly reported that it was loaded", prom.isLoaded());
-    }
-    
-    @Test
-    public void testIsLoadedTrue() throws IOException
-    {
-        PropertiesManager<Key1> prom = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class);
-        prom.load();
-        
-        Assert.assertTrue("Manager incorrectly reported that it was not loaded", prom.isLoaded());
-    }
-    
-    @Test(expected=IllegalStateException.class)
-    public void testEnsureLoaded() throws IOException
-    {
-        PropertiesManager<Key1> prom = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class);
-        prom.getProperty(Key1.SOME_KEY);
+                          test1Manager.keySet()
+                                      .containsAll(EnumSet.allOf(Key1.class)));
     }
     
     @Test
@@ -267,13 +244,22 @@ public class PropertiesManagerTest
     }
     
     @Test
-    public void testResetPropertyToDefault()
+    public void testResetProperty()
     {
         test1Manager.setProperty(Key1.SOME_KEY, "a non-default value");
         test1Manager.resetProperty(Key1.SOME_KEY);
         Assert.assertEquals("Failed to reset an individual property",
                             Key1.SOME_KEY.getDefaultValue(),
                             test1Manager.getProperty(Key1.SOME_KEY));
+    }
+    
+    @Test
+    public void testResetPropertyWithoutDefault()
+    {
+        test2Manager.setProperty(Key2.VALUE_NO_DEFAULT, "a non-default value");
+        test2Manager.resetProperty(Key2.VALUE_NO_DEFAULT);
+        Assert.assertNull("Failed to remove an individual property without a default",
+                          test2Manager.getProperty(Key2.VALUE_NO_DEFAULT));
     }
     
     @Test
@@ -303,6 +289,65 @@ public class PropertiesManagerTest
     {
         test1Manager.resetProperty(Key1.SOME_KEY);
         Assert.assertFalse("Invalid event generated", monitor1.isReset());
+    }
+    
+    @Test
+    public void testSavingDefaultsWithNoChanges() throws IOException
+    {
+        File file = new File(TEST_DATA_DIR, "SavingDefaultsWithNoChanges.properties");
+        PropertiesManager<Key1> prom = PropertiesManagers.newManager(file, Key1.class);
+        prom.setSavingDefaults(true);
+        prom.save();
+        
+        Assert.assertEquals("After saving with defaults on and no modifications, written file should match default properties",
+                            PropertiesManagers.getDefaultProperties(Key1.class,
+                                                                    PropertiesManagers.getDefaultTranslator(Key1.class)),
+                            PropertiesManagers.getProperties(file));
+    }
+    
+    @Test
+    public void testIsModified()
+    {
+        Assert.assertFalse("Manager has not been modified",
+                           test1Manager.isModified());
+
+        test1Manager.setProperty(Key1.SOME_KEY,
+                                 test1Manager.getProperty(Key1.SOME_KEY));
+        Assert.assertFalse("Setting the current value should not mark the manager as modified",
+                           test1Manager.isModified());
+
+        test1Manager.setProperty(Key1.SOME_KEY, "some new value");
+        Assert.assertTrue("Manager has been modified",
+                          test1Manager.isModified());
+    }
+
+    @Test
+    public void testIsModifiedProperty()
+    {
+        Assert.assertFalse("Manager has not been modified",
+                           test1Manager.isModified(Key1.SOME_KEY));
+
+        test1Manager.setProperty(Key1.SOME_KEY,
+                                 test1Manager.getProperty(Key1.SOME_KEY));
+        Assert.assertFalse("Setting the current value should not mark the manager as modified",
+                           test1Manager.isModified(Key1.SOME_KEY));
+
+        test1Manager.setProperty(Key1.SOME_KEY, "some new value");
+        Assert.assertTrue("Manager has been modified",
+                          test1Manager.isModified(Key1.SOME_KEY));
+    }
+    
+    @Test
+    public void testSavingClearsModified() throws IOException
+    {
+        File file = new File(TEST_DATA_DIR, "SavingClearsModified.properties");
+        PropertiesManager<Key1> prom = PropertiesManagers.newManager(file,
+                                                                     Key1.class);
+        prom.setProperty(Key1.SOME_KEY, "some new value");
+        prom.save();
+
+        Assert.assertFalse("After save, no properties should be in a modified state",
+                           prom.isModified());
     }
     
     public static class EventMonitor<T extends Enum<T>> implements PropertyListener<T>
@@ -405,7 +450,8 @@ public class PropertiesManagerTest
         VALUE_ENUM,
         VALUE_STRING,
         VALUE_STRING_TRIM,
-        VALUE_NESTED;
+        VALUE_NESTED,
+        VALUE_NO_DEFAULT;
     }
 
     public static enum Color

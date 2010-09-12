@@ -20,8 +20,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * This class provides supporting API around {@link Properties} to allow easier
@@ -33,28 +38,21 @@ import java.util.Set;
 /* default */class ManagedProperties
 {
     /**
-     * The main properties object that backs this instance. All core properties
-     * work will be delegated to this object.
+     * A collection of properties and their associated stacks. This map will
+     * have, at a minimum, every property for which a default value was
+     * specified.
      */
-    private final Properties properties;
-    
+    private final ConcurrentMap<String, ChangeStack<String>> properties;
+
     /**
      * A copy of the default property values supplied by the client.
      */
     private final Properties defaults;
 
     /**
-     * A marker that indicates whether or not the properties have been
-     * initialized by attempting to read them from a file and either succeeding
-     * or determining that the file does not exist (in which case default values
-     * are used).
-     */
-    private volatile Status status = Status.UNINITIALIZED;
-    
-    /**
-     * A flag to determine whether or not default values are stored to the file when
-     * saved. The default value is <code>false</code>.
-     *
+     * A flag to determine whether or not default values are stored to the file
+     * when saved. The default value is <code>false</code>.
+     * 
      * @see #isSavingDefaults()
      * @see #setSavingDefaults(boolean)
      */
@@ -71,12 +69,19 @@ import java.util.Set;
     public ManagedProperties(Properties defaults)
     {
         this.defaults = copyProperties(defaults);
-        this.properties = new Properties(this.defaults);
+
+        this.properties = new ConcurrentHashMap<String, ChangeStack<String>>(this.defaults.size());
+        for (Entry<Object, Object> entry : defaults.entrySet())
+        {
+            setValue(entry.getKey().toString(),
+                     entry.getValue().toString(),
+                     false);
+        }
     }
-    
+
     /**
      * Copy the given properties to a new object.
-     *
+     * 
      * @param source
      *            the source from which to copy
      * @return a copy of the source or <code>null</code> if the source is
@@ -93,11 +98,11 @@ import java.util.Set;
 
         return copy;
     }
-    
+
     /**
-     * Set the flag that determines whether or not default values are saved to the
-     * properties file when and if it is written.
-     *
+     * Set the flag that determines whether or not default values are saved to
+     * the properties file when and if it is written.
+     * 
      * @param savingDefaults
      *            the flag to set
      */
@@ -107,11 +112,11 @@ import java.util.Set;
     }
 
     /**
-     * Determine whether or not default values will be written to the properties file when
-     * and if it is saved.
-     *
-     * @return <code>true</code> if default values will be written out; <code>false</code>
-     *         otherwise
+     * Determine whether or not default values will be written to the properties
+     * file when and if it is saved.
+     * 
+     * @return <code>true</code> if default values will be written out;
+     *         <code>false</code> otherwise
      */
     public boolean isSavingDefaults()
     {
@@ -120,76 +125,44 @@ import java.util.Set;
 
     /**
      * Load the given file.
-     *
+     * 
      * @param file
      *            the file containing the current property values (this file
      *            does not have to exist)
      * @throws IOException
-     *             if there is a file system error while attempting to read
-     *             the file
+     *             if there is a file system error while attempting to read the
+     *             file
      */
     public void load(File file) throws IOException
     {
-        synchronized (properties)
+        /*
+         * We do not want to throw a FileNotFoundException here because it is OK
+         * if the file does not exist. In this case, default values will be
+         * used.
+         */
+        if (!file.isFile())
         {
-            clear();
-
-            /*
-             * We do not want to throw a FileNotFoundException here because it
-             * is OK if the file does not exist. In this case, default values
-             * will be used.
-             */
-            if (file.isFile())
-            {
-                InputStream inputStream = new FileInputStream(file);
-                try
-                {
-                    properties.load(inputStream);
-                }
-                finally
-                {
-                    inputStream.close();
-                }
-            }
-
-            status = Status.INITIALIZED;
+            return;
         }
-    }
 
-    /**
-     * Ensure that this instance is in a state such that it has valid property
-     * values. In other words, if {@link #isLoaded()} returns <code>true</code>,
-     * this method will do nothing. If {@link #isLoaded()} returns
-     * <code>false</code>, this method will throw an exception.
-     * 
-     * @see #isLoaded()
-     * 
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
-     */
-    private void ensureLoaded() throws IllegalStateException
-    {
-        if (!isLoaded())
+        Properties tmpProperties = new Properties();
+
+        InputStream inputStream = new FileInputStream(file);
+        try
         {
-            throw new IllegalStateException("Illegal access: properties have not yet been loaded");
+            tmpProperties.load(inputStream);
         }
-    }
+        finally
+        {
+            inputStream.close();
+        }
 
-    /**
-     * Determine whether or not this instance has initialized its properties. If
-     * this method does not return <code>true</code>, the properties within must
-     * not be accessed until {@link #load(File)} is called successfully.<br>
-     * <br>
-     * There is no way to unload properties. Therefore, once an instance has
-     * been loaded, the only way this method could return <code>false</code> is
-     * if a subsequent call to {@link #load(File)} fails.
-     * 
-     * @return <code>true</code> if this instance has initialized its
-     *         properties; <code>false</code> otherwise
-     */
-    public boolean isLoaded()
-    {
-        return Status.INITIALIZED.equals(status);
+        for (Entry<Object, Object> entry : tmpProperties.entrySet())
+        {
+            setValue(entry.getKey().toString(),
+                     entry.getValue().toString(),
+                     true);
+        }
     }
 
     /**
@@ -207,19 +180,40 @@ import java.util.Set;
      */
     public void save(File file, String comment) throws IOException
     {
-        synchronized (properties)
-        {
-            ensureLoaded();
+        // FIXME there is a synchronization issue here - the value of a property
+        // could change between save and sync; this could be fixed by an atomic
+        // getAndSync() method on ChangeStack, but then if the save operation
+        // fails, the stacks would be incorrectly marked as synced
+        
+        Properties tmpProperties = new Properties();
 
-            FileOutputStream outputStream = new FileOutputStream(file);
-            try
+        for (Entry<String, ChangeStack<String>> entry : properties.entrySet())
+        {
+            String propertyName = entry.getKey();
+            String value = entry.getValue().getCurrentValue();
+
+            if (!isSavingDefaults()
+                && value.equals(getDefaultValue(propertyName)))
             {
-                properties.store(outputStream, comment);
+                continue;
             }
-            finally
+
+            tmpProperties.setProperty(propertyName, value);
+        }
+
+        FileOutputStream outputStream = new FileOutputStream(file);
+        try
+        {
+            tmpProperties.store(outputStream, comment);
+
+            for (ChangeStack<String> stack : properties.values())
             {
-                outputStream.close();
+                stack.synced();
             }
+        }
+        finally
+        {
+            outputStream.close();
         }
     }
 
@@ -235,11 +229,13 @@ import java.util.Set;
      */
     public String getProperty(String propertyName) throws IllegalStateException
     {
-        synchronized (properties)
+        ChangeStack<String> stack = properties.get(propertyName);
+        if (stack == null)
         {
-            ensureLoaded();
-            return properties.getProperty(propertyName);
+            return null;
         }
+
+        return stack.getCurrentValue();
     }
 
     /**
@@ -259,35 +255,44 @@ import java.util.Set;
     public boolean setProperty(String propertyName, String value) throws NullPointerException,
                                                                  IllegalStateException
     {
-        synchronized (properties)
+        return setValue(propertyName, value, false);
+    }
+
+    /**
+     * Push or sync the given value to the appropriate stack. This method will
+     * create a new stack if this property has never had a value before.
+     * 
+     * @param propertyName
+     *            the property whose value will be set
+     * @param value
+     *            the value to set
+     * @param sync
+     *            a flag to determine whether the value is
+     *            {@link ChangeStack#sync(Object) synced} or simply
+     *            {@link ChangeStack#push(Object) pushed}
+     * @return <code>true</code> if the value of the given property changed as a
+     *         result of this call; <code>false</code> otherwise
+     * @throws NullPointerException
+     *             if the given value is <code>null</code>
+     */
+    private boolean setValue(String propertyName, String value, boolean sync) throws NullPointerException
+    {
+        ChangeStack<String> stack = properties.get(propertyName);
+        if (stack == null)
         {
-            ensureLoaded();
-            
-            /*
-             * If the new value is the same as the old, then there is nothing to
-             * do.
-             */
-            if (value.equals(properties.getProperty(propertyName)))
-            {
-                return false;
-            }
+            // FIXME when a new stack is created this means this is a new
+            // property with no default - this should be considered "modified"
+            // but it will not be since a new stack is in a "not modified" state
 
-            /*
-             * If the new value is the default and we aren't saving defaults,
-             * remove it.
-             */
-            if (!isSavingDefaults()
-                && value.equals(getDefaultValue(propertyName)))
+            ChangeStack<String> newStack = new ChangeStack<String>(value);
+            stack = properties.putIfAbsent(propertyName, newStack);
+            if (stack == null)
             {
-                properties.remove(propertyName);
+                return true;
             }
-            else
-            {
-                properties.setProperty(propertyName, value);
-            }
-
-            return true;
         }
+
+        return sync ? stack.sync(value) : stack.push(value);
     }
 
     /**
@@ -315,29 +320,22 @@ import java.util.Set;
      */
     public boolean resetToDefault(String propertyName) throws IllegalStateException
     {
-        synchronized (properties)
+        /*
+         * If this property was added with no default value, all we can do is
+         * remove the property entirely.
+         */
+        String defaultValue = getDefaultValue(propertyName);
+        if (defaultValue == null)
         {
-            ensureLoaded();
-
-            String previousValue = properties.getProperty(propertyName);
-            if (previousValue == null
-                || previousValue.equals(getDefaultValue(propertyName)))
-            {
-                return false;
-            }
-
-            if (isSavingDefaults())
-            {
-                properties.setProperty(propertyName,
-                                       defaults.getProperty(propertyName));
-            }
-            else
-            {
-                properties.remove(propertyName);
-            }
-
-            return true;
+            return properties.remove(propertyName) != null;
         }
+
+        /*
+         * Every property with a default value is guaranteed to have a stack.
+         * Since we just confirmed the existence of a default value, we know the
+         * stack is available.
+         */
+        return properties.get(propertyName).push(defaultValue);
     }
 
     /**
@@ -345,19 +343,63 @@ import java.util.Set;
      */
     public void resetToDefaults()
     {
-        synchronized (properties)
+        for (Iterator<Entry<String, ChangeStack<String>>> iter = properties.entrySet()
+                                                                           .iterator(); iter.hasNext();)
         {
-            ensureLoaded();
+            Entry<String, ChangeStack<String>> entry = iter.next();
 
-            properties.clear();
-
-            if (isSavingDefaults())
+            String defaultValue = getDefaultValue(entry.getKey());
+            if (defaultValue == null)
             {
-                properties.putAll(defaults);
+                iter.remove();
+                continue;
             }
+
+            entry.getValue().push(defaultValue);
         }
     }
-    
+
+    /**
+     * Determine whether or not the given property has been modified since it
+     * was last load or saved.
+     * 
+     * @param propertyName
+     *            the property to check
+     * @return <code>true</code> if this property has been modified since the
+     *         last time it was loaded or saved; <code>false</code> otherwise
+     */
+    public boolean isModified(String propertyName)
+    {
+        ChangeStack<String> stack = properties.get(propertyName);
+        if (stack == null)
+        {
+            return false;
+        }
+
+        return stack.isModified();
+    }
+
+    /**
+     * Determine whether or not any property has been modified since the last
+     * load or save.
+     * 
+     * @return <code>true</code> if any property known to this instance has been
+     *         modified since the last load or save; <code>false</code>
+     *         otherwise
+     */
+    public boolean isModified()
+    {
+        for (ChangeStack<String> stack : properties.values())
+        {
+            if (stack.isModified())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Retrieve a set of property names currently in use by this instance. This
      * includes default and non-default properties.
@@ -368,24 +410,7 @@ import java.util.Set;
      */
     public Set<String> getPropertyNames() throws IllegalStateException
     {
-        synchronized (properties)
-        {
-            ensureLoaded();
-            return properties.stringPropertyNames();
-        }
-    }
-
-    /**
-     * Revert this instance to an uninitialized state where it contains no
-     * property values. This method does not affect default values.
-     */
-    public void clear()
-    {
-        synchronized (properties)
-        {
-            status = Status.UNINITIALIZED;
-            properties.clear();
-        }
+        return Collections.unmodifiableSet(properties.keySet());
     }
 
     /**
@@ -403,43 +428,13 @@ import java.util.Set;
      */
     public Properties getProperties() throws IllegalStateException
     {
-        synchronized (properties)
+        Properties exportProperties = new Properties();
+        for (Entry<String, ChangeStack<String>> entry : properties.entrySet())
         {
-            ensureLoaded();
-
-            Properties defaultsCopy = new Properties();
-            defaultsCopy.putAll(defaults);
-
-            Properties propertiesCopy = new Properties(defaultsCopy);
-            propertiesCopy.putAll(properties);
-
-            return propertiesCopy;
+            exportProperties.setProperty(entry.getKey(),
+                                         entry.getValue().getCurrentValue());
         }
-    }
-    
-    /**
-     * This Enum provides the possible states that a {@link ManagedProperties}
-     * instance can occupy.
-     *
-     * @author Gregory P. Moyer
-     */
-    private static enum Status
-    {
-        /**
-         * The properties file has not yet been read and so no values should be
-         * used in the properties instance until
-         * {@link ManagedProperties#load(File)} has been called.
-         */
-        UNINITIALIZED,
 
-        /**
-         * The properties object has been initialized. This does not mean that
-         * it read any properties from the file (because it is OK if the
-         * properties file does not exist). Instead, this state indicates that
-         * the {@link ManagedProperties#load(File)} was called and completed
-         * successfully. This means that values can be retrieved and set on this
-         * instance.
-         */
-        INITIALIZED,
+        return exportProperties;
     }
 }

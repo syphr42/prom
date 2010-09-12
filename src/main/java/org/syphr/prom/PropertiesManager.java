@@ -536,16 +536,15 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Retrieve the default raw value of the given property. This functionality is local
-     * by design - nothing outside of the properties manager should be directly requesting
-     * the default value (mostly because it can come from different sources, such as a
-     * default file or the enum constant itself). Also, client code should not be
-     * concerned with what the default value is specifically, just what the value is and
-     * whether or not it is default (see {@link #isDefault(Enum)}).<br>
+     * Retrieve the default raw value of the given property. This functionality
+     * is local by design - nothing outside of the properties manager should be
+     * directly requesting the default value. Client code should not be
+     * concerned with what the default value is specifically, just what the
+     * value is and whether or not it is default (see {@link #isDefault(Enum)}).<br>
      * <br>
-     * Note that if {@link #isAutoTrim() auto trim} is enabled, this value will be trimmed
-     * of whitespace.
-     *
+     * Note that if {@link #isAutoTrim() auto trim} is enabled, this value will
+     * be trimmed of whitespace.
+     * 
      * @param property
      *            the property whose default value is requested
      * @return the default raw value of the given property
@@ -899,6 +898,33 @@ public class PropertiesManager<T extends Enum<T>>
         properties.resetToDefaults();
         firePropertiesReset();
     }
+    
+    /**
+     * Determine whether or not the given property has been modified since it
+     * was last load or saved.
+     * 
+     * @param property
+     *            the property to check
+     * @return <code>true</code> if this property has been modified since the
+     *         last time it was loaded or saved; <code>false</code> otherwise
+     */
+    public boolean isModified(T property)
+    {
+        return properties.isModified(getTranslator().getPropertyName(property));
+    }
+    
+    /**
+     * Determine whether or not any property has been modified since the last
+     * load or save.
+     * 
+     * @return <code>true</code> if any property known to this instance has been
+     *         modified since the last load or save; <code>false</code>
+     *         otherwise
+     */
+    public boolean isModified()
+    {
+        return properties.isModified();
+    }
 
     /**
      * Build a new {@link Retriever} instance that will be used by the
@@ -931,24 +957,6 @@ public class PropertiesManager<T extends Enum<T>>
     protected Retriever getRetriever()
     {
         return retriever;
-    }
-
-    /**
-     * Determine whether or not this instance has initialized its properties. If
-     * this method does not return <code>true</code>, the manager is not in a
-     * state where it can be used until {@link #load()} or {@link #loadNB()} is
-     * called successfully.<br>
-     * <br>
-     * There is no way to unload a manager. Therefore, once an instance has been
-     * loaded, the only way this method could return <code>false</code> is if a
-     * subsequent call to {@link #load()} or {@link #loadNB()} fails.
-     * 
-     * @return <code>true</code> if this manager has initialized its properties;
-     *         <code>false</code> otherwise
-     */
-    public boolean isLoaded()
-    {
-        return properties.isLoaded();
     }
 
     /**
