@@ -291,10 +291,8 @@ public class PropertiesManager<T extends Enum<T>>
      *
      * @return a {@link Properties} instance containing the properties managed by this
      *         instance
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public Properties getProperties() throws IllegalStateException
+    public Properties getProperties()
     {
         return properties.getProperties();
     }
@@ -310,10 +308,8 @@ public class PropertiesManager<T extends Enum<T>>
      * value associated with it. In that case, it would not be included in this set.
      *
      * @return the set of keys currently in use by this manager
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public Set<T> keySet() throws IllegalStateException
+    public Set<T> keySet()
     {
         Set<T> keys = new TreeSet<T>();
 
@@ -506,10 +502,8 @@ public class PropertiesManager<T extends Enum<T>>
      * @param property
      *            the property to retrieve
      * @return the value of the given property
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public String getRawProperty(T property) throws IllegalStateException
+    public String getRawProperty(T property)
     {
         String propertyName = getTranslator().getPropertyName(property);
         String value = properties.getProperty(propertyName);
@@ -736,11 +730,8 @@ public class PropertiesManager<T extends Enum<T>>
      * @throws IllegalArgumentException
      *             if a <code>null</code> value is given (see
      *             {@link #resetProperty(Enum)})
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public void setProperty(T property, String value) throws IllegalArgumentException,
-                                                     IllegalStateException
+    public void setProperty(T property, String value) throws IllegalArgumentException
     {
         if (value == null)
         {
@@ -877,10 +868,8 @@ public class PropertiesManager<T extends Enum<T>>
      *
      * @param property
      *            the property whose value is being reset
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public void resetProperty(T property) throws IllegalStateException
+    public void resetProperty(T property)
     {
         String propertyName = getTranslator().getPropertyName(property);
 
