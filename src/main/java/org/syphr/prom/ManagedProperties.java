@@ -224,10 +224,8 @@ import java.util.concurrent.ConcurrentMap;
      *            the property whose value is requested
      * @return the value associated with the given property or <code>null</code>
      *         if no such property exists
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public String getProperty(String propertyName) throws IllegalStateException
+    public String getProperty(String propertyName)
     {
         ChangeStack<String> stack = properties.get(propertyName);
         if (stack == null)
@@ -249,11 +247,8 @@ import java.util.concurrent.ConcurrentMap;
      *         result of this call; <code>false</code> otherwise
      * @throws NullPointerException
      *             if the give value is <code>null</code>
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public boolean setProperty(String propertyName, String value) throws NullPointerException,
-                                                                 IllegalStateException
+    public boolean setProperty(String propertyName, String value) throws NullPointerException
     {
         return setValue(propertyName, value, false);
     }
@@ -315,10 +310,8 @@ import java.util.concurrent.ConcurrentMap;
      *            the property whose associated value should be reset
      * @return <code>true</code> if the value of the given property changed as a
      *         result of this call; <code>false</code> otherwise
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public boolean resetToDefault(String propertyName) throws IllegalStateException
+    public boolean resetToDefault(String propertyName)
     {
         /*
          * If this property was added with no default value, all we can do is
@@ -405,10 +398,8 @@ import java.util.concurrent.ConcurrentMap;
      * includes default and non-default properties.
      * 
      * @return the set of property names currently in use
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public Set<String> getPropertyNames() throws IllegalStateException
+    public Set<String> getPropertyNames()
     {
         return Collections.unmodifiableSet(properties.keySet());
     }
@@ -423,10 +414,8 @@ import java.util.concurrent.ConcurrentMap;
      * 
      * @return a {@link Properties} instance containing the properties within
      *         this instance
-     * @throws IllegalStateException
-     *             if the properties have not yet been loaded
      */
-    public Properties getProperties() throws IllegalStateException
+    public Properties getProperties()
     {
         Properties exportProperties = new Properties();
         for (Entry<String, ChangeStack<String>> entry : properties.entrySet())
