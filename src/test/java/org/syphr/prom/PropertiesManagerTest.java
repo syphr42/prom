@@ -24,10 +24,10 @@ import java.util.EnumSet;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -121,17 +121,18 @@ public class PropertiesManagerTest
     private PropertiesManager<Key1> test1Manager;
     private PropertiesManager<Key2> test2Manager;
     
-    private EventMonitor<Key1> monitor1;
-    private EventMonitor<Key2> monitor2;
+    private PropertyListener<Key1> monitor1;
+    private PropertyListener<Key2> monitor2;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws IOException
     {
         test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, TRANSLATOR1, EXECUTOR);
-        test1Manager.addPropertyListener(monitor1 = new EventMonitor<Key1>());
+        test1Manager.addPropertyListener(monitor1 = EasyMock.createMock(PropertyListener.class));
 
         test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, TEST_PROPS_2_DEFAULT, Key2.class, EXECUTOR);
-        test2Manager.addPropertyListener(monitor2 = new EventMonitor<Key2>());
+        test2Manager.addPropertyListener(monitor2 = EasyMock.createMock(PropertyListener.class));
     }
 
     @Test
@@ -338,33 +339,44 @@ public class PropertiesManagerTest
                           test2Manager.getProperty(Key2.VALUE_NO_DEFAULT));
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testEventSentWhenSetChangesValue()
     {
+        monitor1.changed(EasyMock.isA(PropertyEvent.class));
+        EasyMock.replay(monitor1);
+        
         test1Manager.setProperty(Key1.SOME_KEY, "some non-default value");
-        Assert.assertTrue("Changed event not generated", monitor1.isChanged());
+        
+        EasyMock.verify(monitor1);
     }
     
     @Test
     public void testEventNotSentWhenSetDoesNotChangeValue()
     {
+        EasyMock.replay(monitor1);
         test1Manager.setProperty(Key1.SOME_KEY, Key1.SOME_KEY.getDefaultValue());
-        Assert.assertFalse("Invalid changed event generated", monitor1.isChanged());
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testEventSentWhenResetChangesValue()
     {
+        monitor1.changed(EasyMock.isA(PropertyEvent.class));
+        monitor1.reset(EasyMock.isA(PropertyEvent.class));
+        EasyMock.replay(monitor1);
+        
         test1Manager.setProperty(Key1.SOME_KEY, "some non-default value");
         test1Manager.resetProperty(Key1.SOME_KEY);
-        Assert.assertTrue("Reset event not generated", monitor1.isReset());
+        
+        EasyMock.verify(monitor1);
     }
     
     @Test
     public void testEventNotSentWhenResetDoesNotChangeValue()
     {
+        EasyMock.replay(monitor1);
         test1Manager.resetProperty(Key1.SOME_KEY);
-        Assert.assertFalse("Invalid event generated", monitor1.isReset());
     }
     
     @Test
@@ -434,78 +446,6 @@ public class PropertiesManagerTest
         Assert.assertEquals("Copy does not equal the source",
                             test2Manager.getProperties(),
                             copy.getProperties());
-    }
-    
-    public static class EventMonitor<T extends Enum<T>> implements PropertyListener<T>
-    {
-        private final AtomicInteger saved = new AtomicInteger(0);
-        private final AtomicInteger reset = new AtomicInteger(0);
-        private final AtomicInteger loaded = new AtomicInteger(0);
-        private final AtomicInteger changed = new AtomicInteger(0);
-        
-        @Override
-        public void saved(PropertyEvent<T> event)
-        {
-            saved.getAndIncrement();
-        }
-        
-        @Override
-        public void reset(PropertyEvent<T> event)
-        {
-            reset.getAndIncrement();
-        }
-        
-        @Override
-        public void loaded(PropertyEvent<T> event)
-        {
-            loaded.getAndIncrement();
-        }
-        
-        @Override
-        public void changed(PropertyEvent<T> event)
-        {
-            changed.getAndIncrement();
-        }
-
-        public boolean isSaved()
-        {
-            return getSavedCount() > 0;
-        }
-
-        public boolean isReset()
-        {
-            return getResetCount() > 0;
-        }
-
-        public boolean isLoaded()
-        {
-            return getLoadedCount() > 0;
-        }
-
-        public boolean isChanged()
-        {
-            return getChangedCount() > 0;
-        }
-        
-        public int getSavedCount()
-        {
-            return saved.get();
-        }
-        
-        public int getResetCount()
-        {
-            return reset.get();
-        }
-        
-        public int getLoadedCount()
-        {
-            return loaded.get();
-        }
-        
-        public int getChangedCount()
-        {
-            return changed.get();
-        }
     }
 
     public static enum Key1 implements Defaultable
