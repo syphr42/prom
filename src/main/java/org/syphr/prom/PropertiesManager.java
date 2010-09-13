@@ -30,8 +30,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class creates a management API for a {@link Properties} file whose keys are
@@ -65,12 +63,6 @@ public class PropertiesManager<T extends Enum<T>>
      * values.
      */
     private final Evaluator evaluator;
-
-    /**
-     * The logger instance used to record notable information regarding the properties
-     * manager.
-     */
-    private final Logger logger;
 
     /**
      * An executor to handle operations that could take a long time, such as interacting
@@ -133,8 +125,6 @@ public class PropertiesManager<T extends Enum<T>>
                              Evaluator evaluator,
                              ExecutorService executor)
     {
-        logger = Logger.getLogger(PropertiesManager.class.getPackage().getName());
-
         this.file = file;
         this.translator = translator;
         this.evaluator = evaluator;
@@ -390,8 +380,6 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * Retrieve the value of the given property as a boolean.
      *
-     * @see #getProperty(Enum)
-     *
      * @param property
      *            the property to retrieve
      * @return <code>true</code> if the value of the property is "true" (case
@@ -404,92 +392,145 @@ public class PropertiesManager<T extends Enum<T>>
 
     /**
      * Retrieve the value of the given property as an integer.
-     *
-     * @see #getProperty(Enum)
-     *
+     * 
      * @param property
      *            the property to retrieve
-     * @return the integer value of the given property or the default value if the current
-     *         value is not a valid integer
+     * @return the integer value of the given property
+     * @throws NumberFormatException
+     *             if the current value is not an integer
+     */
+    public int getIntegerProperty(T property) throws NumberFormatException
+    {
+        return Integer.parseInt(getProperty(property));
+    }
+
+    /**
+     * Retrieve the value of the given property as an integer. If the current
+     * value of the specified property cannot be converted to an integer, the
+     * default value will be retrieved.
+     * 
+     * @param property
+     *            the property to retrieve
+     * @return the integer value of the given property or the default value if
+     *         the current value is not a valid integer
      * @throws NumberFormatException
      *             if both the current and default values are not integers
      */
-    public int getIntegerProperty(T property)
+    public int getIntegerPropertyFallback(T property) throws NumberFormatException
     {
         try
         {
-            return Integer.parseInt(getProperty(property));
+            return getIntegerProperty(property);
         }
         catch (NumberFormatException e)
         {
-            logger.log(Level.INFO, "Property " + property + ": " + e.getMessage(), e);
             return Integer.parseInt(getDefaultProperty(property));
         }
     }
-
+    
     /**
      * Retrieve the value of the given property as a long.
-     *
-     * @see #getProperty(Enum)
-     *
+     * 
      * @param property
      *            the property to retrieve
-     * @return the long value of the given property or the default value if the current
-     *         value is not a valid long
+     * @return the long value of the given property
+     * @throws NumberFormatException
+     *             if the current value is not a long
+     */
+    public long getLongProperty(T property) throws NumberFormatException
+    {
+        return Long.parseLong(getProperty(property));
+    }
+
+    /**
+     * Retrieve the value of the given property as a long. If the current value
+     * of the specified property cannot be converted to a long, the default
+     * value will be retrieved.
+     * 
+     * @param property
+     *            the property to retrieve
+     * @return the long value of the given property or the default value if the
+     *         current value is not a valid long
      * @throws NumberFormatException
      *             if both the current and default values are not longs
      */
-    public long getLongProperty(T property)
+    public long getLongPropertyFallback(T property) throws NumberFormatException
     {
         try
         {
-            return Long.parseLong(getProperty(property));
+            return getLongProperty(property);
         }
         catch (NumberFormatException e)
         {
-            logger.log(Level.INFO, "Property " + property + ": " + e.getMessage(), e);
             return Long.parseLong(getDefaultProperty(property));
         }
     }
-
+    
     /**
      * Retrieve the value of the given property as a float.
-     *
-     * @see #getProperty(Enum)
-     *
+     * 
      * @param property
      *            the property to retrieve
-     * @return the float value of the given property or the default value if the current
-     *         value is not a valid float
+     * @return the float value of the given property
      * @throws NumberFormatException
-     *             if both the current and default values are not floats
+     *             if the current value is not a float
      */
-    public float getFloatProperty(T property)
+    public float getFloatProperty(T property) throws NumberFormatException
     {
-        try
-        {
-            return Float.parseFloat(getProperty(property));
-        }
-        catch (NumberFormatException e)
-        {
-            logger.log(Level.INFO, "Property " + property + ": " + e.getMessage(), e);
-            return Float.parseFloat(getDefaultProperty(property));
-        }
+        return Float.parseFloat(getProperty(property));
     }
 
     /**
-     * Retrieve the value of the given property as a double.
-     *
-     * @see #getProperty(Enum)
-     *
+     * Retrieve the value of the given property as a float. If the current value
+     * of the specified property cannot be converted to a float, the default
+     * value will be retrieved.
+     * 
      * @param property
      *            the property to retrieve
-     * @return the double value of the given property or the default value if the current
-     *         value is not a valid double
+     * @return the float value of the given property or the default value if the
+     *         current value is not a valid float
+     * @throws NumberFormatException
+     *             if both the current and default values are not floats
+     */
+    public float getFloatPropertyFallback(T property) throws NumberFormatException
+    {
+        try
+        {
+            return getFloatProperty(property);
+        }
+        catch (NumberFormatException e)
+        {
+            return Float.parseFloat(getDefaultProperty(property));
+        }
+    }
+    
+    /**
+     * Retrieve the value of the given property as a double.
+     * 
+     * @param property
+     *            the property to retrieve
+     * @return the double value of the given property
+     * @throws NumberFormatException
+     *             if the current value is not a double
+     */
+    public double getDoubleProperty(T property) throws NumberFormatException
+    {
+        return Double.parseDouble(getProperty(property));
+    }
+
+    /**
+     * Retrieve the value of the given property as a double. If the current
+     * value of the specified property cannot be converted to a double, the
+     * default value will be retrieved.
+     * 
+     * @param property
+     *            the property to retrieve
+     * @return the double value of the given property or the default value if
+     *         the current value is not a valid double
      * @throws NumberFormatException
      *             if both the current and default values are not doubles
      */
-    public double getDoubleProperty(T property)
+    public double getDoublePropertyFallback(T property) throws NumberFormatException
     {
         try
         {
@@ -497,34 +538,58 @@ public class PropertiesManager<T extends Enum<T>>
         }
         catch (NumberFormatException e)
         {
-            logger.log(Level.INFO, "Property " + property + ": " + e.getMessage(), e);
             return Double.parseDouble(getDefaultProperty(property));
         }
     }
-
+    
     /**
-     * Retrieve the value of the given property as an enum constant of the given type.<br>
+     * Retrieve the value of the given property as an Enum constant of the given
+     * type.<br>
      * <br>
-     * Note that this method requires the Enum constants to all have upper case names
-     * (following Java naming conventions). This allows for a case insensitivity in the
-     * properties file.
-     *
-     * @see #getProperty(Enum)
-     *
+     * Note that this method requires the Enum constants to all have upper case
+     * names (following Java naming conventions). This allows for case
+     * insensitivity in the properties file.
+     * 
      * @param <E>
-     *            the type of enum that will be returned
+     *            the type of Enum that will be returned
      * @param property
      *            the property to retrieve
      * @param type
-     *            the enum type to which the property will be converted
-     * @return the enum constant corresponding to the value of the given property or the
-     *         default value if the current value is not a valid instance of the given
-     *         type
+     *            the Enum type to which the property will be converted
+     * @return the Enum constant corresponding to the value of the given
+     *         property
      * @throws IllegalArgumentException
-     *             if both the current and default values are not valid constants of the
-     *             given type
+     *             if the current value is not a valid constant of the given
+     *             type
      */
-    public <E extends Enum<E>> E getEnumProperty(T property, Class<E> type)
+    public <E extends Enum<E>> E getEnumProperty(T property, Class<E> type) throws IllegalArgumentException
+    {
+        return Enum.valueOf(type, getProperty(property).toUpperCase());
+    }
+
+    /**
+     * Retrieve the value of the given property as an Enum constant of the given
+     * type. If the current value of the specified property cannot be converted
+     * to the appropriate Enum, the default value will be retrieved.<br>
+     * <br>
+     * Note that this method requires the Enum constants to all have upper case
+     * names (following Java naming conventions). This allows for case
+     * insensitivity in the properties file.
+     * 
+     * @param <E>
+     *            the type of Enum that will be returned
+     * @param property
+     *            the property to retrieve
+     * @param type
+     *            the Enum type to which the property will be converted
+     * @return the Enum constant corresponding to the value of the given
+     *         property or the default value if the current value is not a valid
+     *         instance of the given type
+     * @throws IllegalArgumentException
+     *             if both the current and default values are not valid
+     *             constants of the given type
+     */
+    public <E extends Enum<E>> E getEnumPropertyFallback(T property, Class<E> type) throws IllegalArgumentException
     {
         try
         {
@@ -532,7 +597,6 @@ public class PropertiesManager<T extends Enum<T>>
         }
         catch (IllegalArgumentException e)
         {
-            logger.log(Level.INFO, "Property " + property + ": " + e.getMessage(), e);
             return Enum.valueOf(type, getDefaultProperty(property).toUpperCase());
         }
     }

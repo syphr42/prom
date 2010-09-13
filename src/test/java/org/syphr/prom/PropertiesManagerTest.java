@@ -129,11 +129,9 @@ public class PropertiesManagerTest
     {
         test1Manager = PropertiesManagers.newManager(TEST_PROPS_1, Key1.class, TRANSLATOR1, EXECUTOR);
         test1Manager.addPropertyListener(monitor1 = new EventMonitor<Key1>());
-        test1Manager.load();
 
         test2Manager = PropertiesManagers.newManager(TEST_PROPS_2, TEST_PROPS_2_DEFAULT, Key2.class, EXECUTOR);
         test2Manager.addPropertyListener(monitor2 = new EventMonitor<Key2>());
-        test2Manager.load();
     }
 
     @Test
@@ -151,12 +149,42 @@ public class PropertiesManagerTest
                             test2Manager.getIntegerProperty(Key2.VALUE_INT),
                             Integer.parseInt(getTest2DefaultProperty(Key2.VALUE_INT)));
     }
+    
+    @Test(expected=NumberFormatException.class)
+    public void testGetIntegerPropertyFails()
+    {
+        test2Manager.getIntegerProperty(Key2.VALUE_NESTED);
+    }
+    
+    @Test
+    public void testGetIntegerPropertyFallback()
+    {
+        test2Manager.setProperty(Key2.VALUE_INT, "not a number");
+        Assert.assertEquals("Failed to retrieve default integer value",
+                            test2Manager.getIntegerPropertyFallback(Key2.VALUE_INT),
+                            Integer.parseInt(getTest2DefaultProperty(Key2.VALUE_INT)));
+    }
 
     @Test
     public void testGetLongProperty()
     {
         Assert.assertEquals("Failed to retrieve long value",
                             test2Manager.getLongProperty(Key2.VALUE_LONG),
+                            Long.parseLong(getTest2DefaultProperty(Key2.VALUE_LONG)));
+    }
+    
+    @Test(expected=NumberFormatException.class)
+    public void testGetLongPropertyFails()
+    {
+        test2Manager.getLongProperty(Key2.VALUE_NESTED);
+    }
+    
+    @Test
+    public void testGetLongPropertyFallback()
+    {
+        test2Manager.setProperty(Key2.VALUE_LONG, "not a number");
+        Assert.assertEquals("Failed to retrieve default long value",
+                            test2Manager.getLongPropertyFallback(Key2.VALUE_LONG),
                             Long.parseLong(getTest2DefaultProperty(Key2.VALUE_LONG)));
     }
 
@@ -169,11 +197,43 @@ public class PropertiesManagerTest
                             FLOATING_POINT_DELTA);
     }
 
+    @Test(expected=NumberFormatException.class)
+    public void testGetFloatPropertyFails()
+    {
+        test2Manager.getFloatProperty(Key2.VALUE_NESTED);
+    }
+    
+    @Test
+    public void testGetFloatPropertyFallback()
+    {
+        test2Manager.setProperty(Key2.VALUE_FLOAT, "not a number");
+        Assert.assertEquals("Failed to retrieve default float value",
+                            test2Manager.getFloatPropertyFallback(Key2.VALUE_FLOAT),
+                            Float.parseFloat(getTest2DefaultProperty(Key2.VALUE_FLOAT)),
+                            FLOATING_POINT_DELTA);
+    }
+
     @Test
     public void testGetDoubleProperty()
     {
         Assert.assertEquals("Failed to retrieve double value",
                             test2Manager.getDoubleProperty(Key2.VALUE_DOUBLE),
+                            Double.parseDouble(getTest2DefaultProperty(Key2.VALUE_DOUBLE)),
+                            FLOATING_POINT_DELTA);
+    }
+    
+    @Test(expected=NumberFormatException.class)
+    public void testGetDoublePropertyFails()
+    {
+        test2Manager.getDoubleProperty(Key2.VALUE_NESTED);
+    }
+    
+    @Test
+    public void testGetDoublePropertyFallback()
+    {
+        test2Manager.setProperty(Key2.VALUE_DOUBLE, "not a number");
+        Assert.assertEquals("Failed to retrieve default double value",
+                            test2Manager.getDoublePropertyFallback(Key2.VALUE_DOUBLE),
                             Double.parseDouble(getTest2DefaultProperty(Key2.VALUE_DOUBLE)),
                             FLOATING_POINT_DELTA);
     }
@@ -183,6 +243,22 @@ public class PropertiesManagerTest
     {
         Assert.assertEquals("Failed to retrieve enum value",
                             test2Manager.getEnumProperty(Key2.VALUE_ENUM, Color.class),
+                            Color.valueOf(getTest2DefaultProperty(Key2.VALUE_ENUM).toUpperCase()));
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testGetEnumPropertyFails()
+    {
+        test2Manager.getEnumProperty(Key2.VALUE_NESTED, Color.class);
+    }
+    
+    @Test
+    public void testGetEnumPropertyFallback()
+    {
+        test2Manager.setProperty(Key2.VALUE_ENUM, "not a color");
+        Assert.assertEquals("Failed to retrieve default enum value",
+                            test2Manager.getEnumPropertyFallback(Key2.VALUE_ENUM,
+                                                                 Color.class),
                             Color.valueOf(getTest2DefaultProperty(Key2.VALUE_ENUM).toUpperCase()));
     }
 
