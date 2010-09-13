@@ -181,6 +181,15 @@ public class ManagedProperty<T extends Enum<T>>
     {
         return manager.getIntegerProperty(propertyKey);
     }
+    
+    /**
+     * @return delegate to
+     *         {@link PropertiesManager#getIntegerPropertyFallback(Enum)}
+     */
+    public int getIntegerPropertyFallback()
+    {
+        return manager.getIntegerPropertyFallback(propertyKey);
+    }
 
     /**
      * @return delegate to {@link PropertiesManager#getLongProperty(Enum)}
@@ -188,6 +197,15 @@ public class ManagedProperty<T extends Enum<T>>
     public long getLongProperty()
     {
         return manager.getLongProperty(propertyKey);
+    }
+    
+    /**
+     * @return delegate to
+     *         {@link PropertiesManager#getLongPropertyFallback(Enum)}
+     */
+    public long getLongPropertyFallback()
+    {
+        return manager.getLongPropertyFallback(propertyKey);
     }
 
     /**
@@ -197,6 +215,15 @@ public class ManagedProperty<T extends Enum<T>>
     {
         return manager.getFloatProperty(propertyKey);
     }
+    
+    /**
+     * @return delegate to
+     *         {@link PropertiesManager#getFloatPropertyFallback(Enum)}
+     */
+    public float getFloatPropertyFallback()
+    {
+        return manager.getFloatPropertyFallback(propertyKey);
+    }
 
     /**
      * @return delegate to {@link PropertiesManager#getDoubleProperty(Enum)}
@@ -204,6 +231,15 @@ public class ManagedProperty<T extends Enum<T>>
     public double getDoubleProperty()
     {
         return manager.getDoubleProperty(propertyKey);
+    }
+    
+    /**
+     * @return delegate to
+     *         {@link PropertiesManager#getDoublePropertyFallback(Enum)}
+     */
+    public double getDoublePropertyFallback()
+    {
+        return manager.getDoublePropertyFallback(propertyKey);
     }
 
     /**
@@ -216,6 +252,19 @@ public class ManagedProperty<T extends Enum<T>>
     public <E extends Enum<E>> E getEnumProperty(Class<E> type)
     {
         return manager.getEnumProperty(propertyKey, type);
+    }
+    
+    /**
+     * @param <E>
+     *            see delegate
+     * @param type
+     *            see delegate
+     * @return delegate to
+     *         {@link PropertiesManager#getEnumPropertyFallback(Enum, Class)}
+     */
+    public <E extends Enum<E>> E getEnumPropertyFallback(Class<E> type)
+    {
+        return manager.getEnumPropertyFallback(propertyKey, type);
     }
 
     /**
