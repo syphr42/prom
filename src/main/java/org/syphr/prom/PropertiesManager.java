@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -140,6 +141,38 @@ public class PropertiesManager<T extends Enum<T>>
         this.executor = executor;
 
         properties = new ManagedProperties(defaults);
+    }
+
+    /**
+     * Copy the current state of this manager to a new instance that is based on
+     * a different file. The logical use case for this is to specify a file that
+     * does not currently exist and then call {@link #save()}. This would
+     * effectively copy the properties file.<br>
+     * <br>
+     * Note that this method does not copy listeners or {@link ManagedProperty}
+     * instances. It will also install the current {@link Translator},
+     * {@link Evaluator}, {@link ExecutorService}, as well as the default
+     * {@link Properties} into the new instance.
+     * 
+     * @param newFile
+     *            the file to which the new instance will be based
+     * @return a new manager with the same property values and defaults as this
+     *         instance
+     */
+    public PropertiesManager<T> copy(File newFile)
+    {
+        PropertiesManager<T> copy = new PropertiesManager<T>(newFile,
+                                                             properties.getDefaults(),
+                                                             getTranslator(),
+                                                             getEvaluator(),
+                                                             executor);
+        
+        for (T property : keySet())
+        {
+            copy.setProperty(property, getRawProperty(property));
+        }
+
+        return copy;
     }
 
     /**
@@ -294,7 +327,17 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public Properties getProperties()
     {
-        return properties.getProperties();
+        Properties propertiesCopy = properties.getProperties();
+
+        if (isAutoTrim())
+        {
+            for (Entry<Object, Object> entry : propertiesCopy.entrySet())
+            {
+                entry.setValue(entry.getValue().toString().trim());
+            }
+        }
+
+        return propertiesCopy;
     }
 
     /**

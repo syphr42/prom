@@ -350,6 +350,16 @@ public class PropertiesManagerTest
                            prom.isModified());
     }
     
+    @Test
+    public void testCopy()
+    {
+        PropertiesManager<Key2> copy = test2Manager.copy(new File(TEST_DATA_DIR,
+                                                                  "test2.copy.properties"));
+        Assert.assertEquals("Copy does not equal the source",
+                            test2Manager.getProperties(),
+                            copy.getProperties());
+    }
+    
     public static class EventMonitor<T extends Enum<T>> implements PropertyListener<T>
     {
         private final AtomicInteger saved = new AtomicInteger(0);

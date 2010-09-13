@@ -426,4 +426,14 @@ import java.util.concurrent.ConcurrentMap;
 
         return exportProperties;
     }
+
+    /**
+     * Retrieve the default property values used by this instance.
+     * 
+     * @return a copy of this instance's default properties
+     */
+    public Properties getDefaults()
+    {
+        return copyProperties(defaults);
+    }
 }
