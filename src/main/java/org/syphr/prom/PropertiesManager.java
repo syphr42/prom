@@ -93,6 +93,15 @@ public class PropertiesManager<T extends Enum<T>>
      * @see #setAutoTrim(boolean)
      */
     private boolean autoTrim = true;
+    
+    /**
+     * A flag to determine whether or not default values are stored to the file
+     * when saved. The default value is <code>false</code>.
+     * 
+     * @see #isSavingDefaults()
+     * @see #setSavingDefaults(boolean)
+     */
+    private volatile boolean savingDefaults;
 
     /**
      * The comment that will be written to the top of the properties file when and if it
@@ -174,7 +183,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public void setSavingDefaults(boolean savingDefaults)
     {
-        properties.setSavingDefaults(savingDefaults);
+        this.savingDefaults = savingDefaults;
     }
 
     /**
@@ -186,7 +195,7 @@ public class PropertiesManager<T extends Enum<T>>
      */
     public boolean isSavingDefaults()
     {
-        return properties.isSavingDefaults();
+        return savingDefaults;
     }
 
     /**
@@ -960,7 +969,7 @@ public class PropertiesManager<T extends Enum<T>>
             @Override
             public Void call() throws Exception
             {
-                properties.save(getFile(), comment);
+                properties.save(getFile(), comment, isSavingDefaults());
                 firePropertiesSaved();
                 return null;
             }

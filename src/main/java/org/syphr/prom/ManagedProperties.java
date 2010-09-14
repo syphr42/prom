@@ -50,15 +50,6 @@ import java.util.concurrent.ConcurrentMap;
     private final Properties defaults;
 
     /**
-     * A flag to determine whether or not default values are stored to the file
-     * when saved. The default value is <code>false</code>.
-     * 
-     * @see #isSavingDefaults()
-     * @see #setSavingDefaults(boolean)
-     */
-    private volatile boolean savingDefaults;
-
-    /**
      * Construct a new managed instance.
      * 
      * @param defaults
@@ -97,30 +88,6 @@ import java.util.concurrent.ConcurrentMap;
         }
 
         return copy;
-    }
-
-    /**
-     * Set the flag that determines whether or not default values are saved to
-     * the properties file when and if it is written.
-     * 
-     * @param savingDefaults
-     *            the flag to set
-     */
-    public void setSavingDefaults(boolean savingDefaults)
-    {
-        this.savingDefaults = savingDefaults;
-    }
-
-    /**
-     * Determine whether or not default values will be written to the properties
-     * file when and if it is saved.
-     * 
-     * @return <code>true</code> if default values will be written out;
-     *         <code>false</code> otherwise
-     */
-    public boolean isSavingDefaults()
-    {
-        return savingDefaults;
     }
 
     /**
@@ -175,10 +142,14 @@ import java.util.concurrent.ConcurrentMap;
      * @param comment
      *            an optional comment to put at the top of the file (
      *            <code>null</code> means no comment)
+     * @param saveDefaults
+     *            if <code>true</code>, values that match the default will be
+     *            written to the file; otherwise values matching the default
+     *            will be skipped
      * @throws IOException
      *             if there is an error writing the given file
      */
-    public void save(File file, String comment) throws IOException
+    public void save(File file, String comment, boolean saveDefaults) throws IOException
     {
         // FIXME there is a synchronization issue here - the value of a property
         // could change between save and sync; this could be fixed by an atomic
@@ -192,8 +163,7 @@ import java.util.concurrent.ConcurrentMap;
             String propertyName = entry.getKey();
             String value = entry.getValue().getCurrentValue();
 
-            if (!isSavingDefaults()
-                && value.equals(getDefaultValue(propertyName)))
+            if (!saveDefaults && value.equals(getDefaultValue(propertyName)))
             {
                 continue;
             }
