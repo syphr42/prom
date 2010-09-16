@@ -339,6 +339,14 @@ public class PropertiesManagerTest
                           test2Manager.getProperty(Key2.VALUE_NO_DEFAULT));
     }
     
+    @Test
+    public void testSetPropertyWithoutDefaultMarksModified()
+    {
+        test2Manager.setProperty(Key2.VALUE_NO_DEFAULT, "a non-default value");
+        Assert.assertTrue("Setting a property without a default value was not recognized as a change",
+                          test2Manager.isModified(Key2.VALUE_NO_DEFAULT));
+    }
+    
     @SuppressWarnings("unchecked")
     @Test
     public void testEventSentWhenSetChangesValue()

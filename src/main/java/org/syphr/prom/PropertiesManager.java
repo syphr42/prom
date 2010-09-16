@@ -314,15 +314,18 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Retrieve a {@link Properties} instance that contains the properties managed by this
-     * instance.<br>
+     * Retrieve a {@link Properties} object that contains the properties managed
+     * by this instance. This object will contain default values directly. In
+     * other words, if one of the store() methods in the {@link Properties}
+     * returned by this method is called, default values will be included. This
+     * is true regardless of the value of {@link #isSavingDefaults()}.<br>
      * <br>
-     * Please note that the returned {@link Properties} instance is not connected in any
-     * way to this manager and is only a snapshot of what the properties looked like at
-     * the time the request was fulfilled.
-     *
-     * @return a {@link Properties} instance containing the properties managed by this
-     *         instance
+     * Please note that the returned {@link Properties} object is not connected
+     * in any way to this manager and is only a snapshot of what the properties
+     * looked like at the time the request was fulfilled.
+     * 
+     * @return a {@link Properties} instance containing the properties managed
+     *         by this instance (including defaults)
      */
     public Properties getProperties()
     {

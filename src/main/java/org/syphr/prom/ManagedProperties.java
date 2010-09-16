@@ -66,7 +66,7 @@ import java.util.concurrent.ConcurrentMap;
         {
             setValue(entry.getKey().toString(),
                      entry.getValue().toString(),
-                     false);
+                     true);
         }
     }
 
@@ -245,11 +245,7 @@ import java.util.concurrent.ConcurrentMap;
         ChangeStack<String> stack = properties.get(propertyName);
         if (stack == null)
         {
-            // FIXME when a new stack is created this means this is a new
-            // property with no default - this should be considered "modified"
-            // but it will not be since a new stack is in a "not modified" state
-
-            ChangeStack<String> newStack = new ChangeStack<String>(value);
+            ChangeStack<String> newStack = new ChangeStack<String>(value, sync);
             stack = properties.putIfAbsent(propertyName, newStack);
             if (stack == null)
             {
@@ -375,15 +371,17 @@ import java.util.concurrent.ConcurrentMap;
     }
 
     /**
-     * Retrieve a {@link Properties} instance that contains the properties
-     * within this instance.<br>
+     * Retrieve a {@link Properties} object that contains the properties managed
+     * by this instance. This object will contain default values directly. In
+     * other words, if one of the store() methods in the {@link Properties}
+     * returned by this method is called, default values will be included.<br>
      * <br>
-     * Please note that the returned {@link Properties} instance is not
-     * connected in any way to this instance and is only a snapshot of what the
-     * properties looked like at the time the request was fulfilled.
+     * Please note that the returned {@link Properties} object is not connected
+     * in any way to this instance and is only a snapshot of what the properties
+     * looked like at the time the request was fulfilled.
      * 
-     * @return a {@link Properties} instance containing the properties within
-     *         this instance
+     * @return a {@link Properties} instance containing the properties managed
+     *         by this instance (including defaults)
      */
     public Properties getProperties()
     {
