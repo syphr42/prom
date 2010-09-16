@@ -155,21 +155,8 @@ import java.util.concurrent.ConcurrentMap;
         // could change between save and sync; this could be fixed by an atomic
         // getAndSync() method on ChangeStack, but then if the save operation
         // fails, the stacks would be incorrectly marked as synced
-        
-        Properties tmpProperties = new Properties();
 
-        for (Entry<String, ChangeStack<String>> entry : properties.entrySet())
-        {
-            String propertyName = entry.getKey();
-            String value = entry.getValue().getCurrentValue();
-
-            if (!saveDefaults && value.equals(getDefaultValue(propertyName)))
-            {
-                continue;
-            }
-
-            tmpProperties.setProperty(propertyName, value);
-        }
+        Properties tmpProperties = getProperties(saveDefaults);
 
         FileOutputStream outputStream = new FileOutputStream(file);
         try
@@ -372,27 +359,41 @@ import java.util.concurrent.ConcurrentMap;
 
     /**
      * Retrieve a {@link Properties} object that contains the properties managed
-     * by this instance. This object will contain default values directly. In
-     * other words, if one of the store() methods in the {@link Properties}
-     * returned by this method is called, default values will be included.<br>
+     * by this instance.<br>
      * <br>
      * Please note that the returned {@link Properties} object is not connected
      * in any way to this instance and is only a snapshot of what the properties
      * looked like at the time the request was fulfilled.
      * 
+     * @param saveDefaults
+     *            if <code>true</code>, values that match the default will be
+     *            stored directly in the properties map; otherwise values
+     *            matching the default will only be available through the
+     *            {@link Properties} concept of defaults (as a fallback and not
+     *            written to the file system if this object is stored)
+     * 
      * @return a {@link Properties} instance containing the properties managed
-     *         by this instance (including defaults)
+     *         by this instance (including defaults as defined by the given
+     *         flag)
      */
-    public Properties getProperties()
+    public Properties getProperties(boolean saveDefaults)
     {
-        Properties exportProperties = new Properties();
+        Properties tmpProperties = new Properties(defaults);
+
         for (Entry<String, ChangeStack<String>> entry : properties.entrySet())
         {
-            exportProperties.setProperty(entry.getKey(),
-                                         entry.getValue().getCurrentValue());
+            String propertyName = entry.getKey();
+            String value = entry.getValue().getCurrentValue();
+
+            if (!saveDefaults && value.equals(getDefaultValue(propertyName)))
+            {
+                continue;
+            }
+
+            tmpProperties.setProperty(propertyName, value);
         }
 
-        return exportProperties;
+        return tmpProperties;
     }
 
     /**

@@ -454,6 +454,19 @@ public class PropertiesManagerTest
         Assert.assertEquals("Copy does not equal the source",
                             test2Manager.getProperties(),
                             copy.getProperties());
+        Assert.assertFalse("Copying an unmodified manager should result in an unmodified copy",
+                           copy.isModified());
+    }
+    
+    @Test
+    public void testCopyModified()
+    {
+        test2Manager.setProperty(Key2.VALUE_STRING, "some non-default value");
+        PropertiesManager<Key2> copy = test2Manager.copy(new File(TEST_DATA_DIR,
+                                                                  "test2.copy.properties"));
+
+        Assert.assertTrue("Copying a modified manager should result in a modified copy",
+                          copy.isModified());
     }
 
     public static enum Key1 implements Defaultable
