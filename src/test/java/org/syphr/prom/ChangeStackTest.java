@@ -28,10 +28,35 @@ public class ChangeStackTest
 
     private ChangeStack<String> stack;
 
+    @Test
+    public void testUnsyncedConstructor()
+    {
+        ChangeStack<String> altStack = new ChangeStack<String>(INITIAL_VALUE,
+                                                               false);
+
+        Assert.assertTrue("Stack should be initially unsynchronized",
+                          altStack.isModified());
+        Assert.assertFalse("Undo should not be possible",
+                           altStack.isUndoPossible());
+        Assert.assertFalse("Redo should not be possible",
+                           altStack.isRedoPossible());
+    }
+
     @Before
     public void setup()
     {
         stack = new ChangeStack<String>(INITIAL_VALUE);
+    }
+    
+    @Test
+    public void testInitialState()
+    {
+        Assert.assertFalse("Stack should be initially synchronized",
+                           stack.isModified());
+        Assert.assertFalse("Undo should not be possible",
+                           stack.isUndoPossible());
+        Assert.assertFalse("Redo should not be possible",
+                           stack.isRedoPossible());
     }
 
     @Test
@@ -145,44 +170,6 @@ public class ChangeStackTest
         Assert.assertEquals("Value should equal current because redo is not possible",
                             stack.getCurrentValue(),
                             stack.redo());
-    }
-
-    @Test
-    public void testClear()
-    {
-        stack.push(VALUE_1);
-
-        Assert.assertEquals("Return value should be the current value before clear",
-                            stack.getCurrentValue(),
-                            stack.clear());
-        Assert.assertEquals("After clear, value should be the current value before clear",
-                            VALUE_1,
-                            stack.getCurrentValue());
-        Assert.assertFalse("Undo should not be possible after clear",
-                           stack.isUndoPossible());
-        Assert.assertFalse("Redo should not be possible after clear",
-                           stack.isRedoPossible());
-        Assert.assertFalse("Stack should not be in a modified state after clear",
-                           stack.isModified());
-    }
-
-    @Test
-    public void testClearWithValue()
-    {
-        stack.push(VALUE_1);
-
-        Assert.assertEquals("Return value should be the given value",
-                            VALUE_2,
-                            stack.clear(VALUE_2));
-        Assert.assertEquals("After clear, value should be the given value",
-                            VALUE_2,
-                            stack.getCurrentValue());
-        Assert.assertFalse("Undo should not be possible after clear",
-                           stack.isUndoPossible());
-        Assert.assertFalse("Redo should not be possible after clear",
-                           stack.isRedoPossible());
-        Assert.assertFalse("Stack should not be in a modified state after clear",
-                           stack.isModified());
     }
 
     @Test

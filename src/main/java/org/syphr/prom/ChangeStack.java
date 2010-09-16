@@ -49,22 +49,42 @@ import java.util.List;
     /**
      * The location of the last value that was synchronized. It is up to the
      * client to determine when this should be set (e.g. what does it mean to be
-     * synchronized). This will equal the current location at the time the stack
-     * is created.
+     * synchronized).
      */
-    private int syncLoc;
+    private int syncLoc = -1;
+
+    /**
+     * Create a new stack with the given initial value. This new stack will be
+     * in a {@link #synced() synced}, {@link #isModified() unmodified} state.
+     * 
+     * @param value
+     *            the initial value of this stack
+     */
+    public ChangeStack(T value)
+    {
+        this(value, true);
+    }
 
     /**
      * Create a new stack with the given initial value.
      * 
      * @param value
-     *            the initial value of this stack (it is assumed that this is
-     *            also the last saved value)
+     *            the initial value of this stack
+     * @param sync
+     *            if <code>true</code>, the initial state will be
+     *            {@link #synced() synced} and {@link #isModified() unmodified};
+     *            otherwise the the initial state will be {@link #isModified()
+     *            modified}
      */
-    public ChangeStack(T value)
+    public ChangeStack(T value, boolean sync)
     {
         stack = new ArrayList<T>();
         stack.add(value);
+        
+        if (sync)
+        {
+            synced();
+        }
     }
 
     /**
@@ -168,13 +188,18 @@ import java.util.List;
 
     /**
      * Retrieve the last synced value for the property to which this stack is
-     * registered.
+     * registered. If the value has never been synced, <code>null</code> will be
+     * returned.
      * 
-     * @return the synced value
+     * @see #sync(Object)
+     * @see #synced()
+     * 
+     * @return the synced value or <code>null</code> if the stack has never been
+     *         synced
      */
     public synchronized T getSyncedValue()
     {
-        return stack.get(syncLoc);
+        return syncLoc < 0 ? null : stack.get(syncLoc);
     }
 
     /**
@@ -233,33 +258,5 @@ import java.util.List;
         }
 
         return stack.get(++currentLoc);
-    }
-
-    /**
-     * Empty the stack and re-initialize it with what was the
-     * {@link #getCurrentValue() current value} before the stack was cleared.
-     * 
-     * @return the new {@link #getCurrentValue() current value}
-     */
-    public synchronized T clear()
-    {
-        return clear(getCurrentValue());
-    }
-
-    /**
-     * Empty the stack and re-initialize it with the given value.
-     * 
-     * @param value
-     *            the value to initialize the cleared stack
-     * @return the new {@link #getCurrentValue() current value}
-     */
-    public synchronized T clear(T value)
-    {
-        stack.clear();
-        stack.add(value);
-
-        currentLoc = syncLoc = 0;
-
-        return value;
     }
 }
