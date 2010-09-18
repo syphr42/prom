@@ -156,11 +156,10 @@ import java.util.concurrent.ConcurrentMap;
         // getAndSync() method on ChangeStack, but then if the save operation
         // fails, the stacks would be incorrectly marked as synced
 
-        Properties tmpProperties = getProperties(saveDefaults);
-
         FileOutputStream outputStream = new FileOutputStream(file);
         try
         {
+            Properties tmpProperties = getProperties(saveDefaults);
             tmpProperties.store(outputStream, comment);
 
             for (ChangeStack<String> stack : properties.values())
