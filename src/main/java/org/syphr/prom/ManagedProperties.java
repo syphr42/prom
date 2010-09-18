@@ -365,7 +365,7 @@ import java.util.concurrent.ConcurrentMap;
      * in any way to this instance and is only a snapshot of what the properties
      * looked like at the time the request was fulfilled.
      * 
-     * @param saveDefaults
+     * @param includeDefaults
      *            if <code>true</code>, values that match the default will be
      *            stored directly in the properties map; otherwise values
      *            matching the default will only be available through the
@@ -376,7 +376,7 @@ import java.util.concurrent.ConcurrentMap;
      *         by this instance (including defaults as defined by the given
      *         flag)
      */
-    public Properties getProperties(boolean saveDefaults)
+    public Properties getProperties(boolean includeDefaults)
     {
         Properties tmpProperties = new Properties(defaults);
 
@@ -385,7 +385,7 @@ import java.util.concurrent.ConcurrentMap;
             String propertyName = entry.getKey();
             String value = entry.getValue().getCurrentValue();
 
-            if (!saveDefaults && value.equals(getDefaultValue(propertyName)))
+            if (!includeDefaults && value.equals(getDefaultValue(propertyName)))
             {
                 continue;
             }
