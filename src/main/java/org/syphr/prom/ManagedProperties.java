@@ -102,32 +102,41 @@ import java.util.concurrent.ConcurrentMap;
      */
     public void load(File file) throws IOException
     {
+        Properties tmpProperties = new Properties(defaults);
+        
         /*
          * We do not want to throw a FileNotFoundException here because it is OK
          * if the file does not exist. In this case, default values will be
          * used.
          */
-        if (!file.isFile())
+        if (file.isFile())
         {
-            return;
+            InputStream inputStream = new FileInputStream(file);
+            try
+            {
+                tmpProperties.load(inputStream);
+            }
+            finally
+            {
+                inputStream.close();
+            }
         }
+        
+        Set<String> tmpPropertyNames = tmpProperties.stringPropertyNames();
+        
+        /*
+         * Throw away any property that is not in the file or in the defaults.
+         */
+        properties.keySet().retainAll(tmpPropertyNames);
 
-        Properties tmpProperties = new Properties();
-
-        InputStream inputStream = new FileInputStream(file);
-        try
+        /*
+         * Set every value to either the value read from the file or the
+         * default.
+         */
+        for (String tmpPropertyName : tmpPropertyNames)
         {
-            tmpProperties.load(inputStream);
-        }
-        finally
-        {
-            inputStream.close();
-        }
-
-        for (Entry<Object, Object> entry : tmpProperties.entrySet())
-        {
-            setValue(entry.getKey().toString(),
-                     entry.getValue().toString(),
+            setValue(tmpPropertyName,
+                     tmpProperties.getProperty(tmpPropertyName),
                      true);
         }
     }
