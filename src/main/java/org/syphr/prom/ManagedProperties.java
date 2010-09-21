@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * This class provides supporting API around {@link Properties} to allow easier
@@ -37,6 +39,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 /* default */class ManagedProperties
 {
+    private final Gatekeeper gatekeeper;
+
     /**
      * A collection of properties and their associated stacks. This map will
      * have, at a minimum, every property for which a default value was
@@ -59,6 +63,8 @@ import java.util.concurrent.ConcurrentMap;
      */
     public ManagedProperties(Properties defaults)
     {
+        this.gatekeeper = new Gatekeeper();
+
         this.defaults = copyProperties(defaults);
 
         this.properties = new ConcurrentHashMap<String, ChangeStack<String>>(this.defaults.size());
@@ -103,7 +109,7 @@ import java.util.concurrent.ConcurrentMap;
     public void load(File file) throws IOException
     {
         Properties tmpProperties = new Properties(defaults);
-        
+
         /*
          * We do not want to throw a FileNotFoundException here because it is OK
          * if the file does not exist. In this case, default values will be
@@ -121,23 +127,33 @@ import java.util.concurrent.ConcurrentMap;
                 inputStream.close();
             }
         }
-        
-        Set<String> tmpPropertyNames = tmpProperties.stringPropertyNames();
-        
-        /*
-         * Throw away any property that is not in the file or in the defaults.
-         */
-        properties.keySet().retainAll(tmpPropertyNames);
 
-        /*
-         * Set every value to either the value read from the file or the
-         * default.
-         */
-        for (String tmpPropertyName : tmpPropertyNames)
+        Set<String> tmpPropertyNames = tmpProperties.stringPropertyNames();
+
+        gatekeeper.signIn();
+        try
         {
-            setValue(tmpPropertyName,
-                     tmpProperties.getProperty(tmpPropertyName),
-                     true);
+
+            /*
+             * Throw away any property that is not in the file or in the
+             * defaults.
+             */
+            properties.keySet().retainAll(tmpPropertyNames);
+
+            /*
+             * Set every value to either the value read from the file or the
+             * default.
+             */
+            for (String tmpPropertyName : tmpPropertyNames)
+            {
+                setValue(tmpPropertyName,
+                         tmpProperties.getProperty(tmpPropertyName),
+                         true);
+            }
+        }
+        finally
+        {
+            gatekeeper.signOut();
         }
     }
 
@@ -160,25 +176,28 @@ import java.util.concurrent.ConcurrentMap;
      */
     public void save(File file, String comment, boolean saveDefaults) throws IOException
     {
-        // FIXME there is a synchronization issue here - the value of a property
-        // could change between save and sync; this could be fixed by an atomic
-        // getAndSync() method on ChangeStack, but then if the save operation
-        // fails, the stacks would be incorrectly marked as synced
-
-        FileOutputStream outputStream = new FileOutputStream(file);
+        gatekeeper.lock();
         try
         {
-            Properties tmpProperties = getProperties(saveDefaults);
-            tmpProperties.store(outputStream, comment);
-
-            for (ChangeStack<String> stack : properties.values())
+            FileOutputStream outputStream = new FileOutputStream(file);
+            try
             {
-                stack.synced();
+                Properties tmpProperties = getProperties(saveDefaults);
+                tmpProperties.store(outputStream, comment);
+
+                for (ChangeStack<String> stack : properties.values())
+                {
+                    stack.synced();
+                }
+            }
+            finally
+            {
+                outputStream.close();
             }
         }
         finally
         {
-            outputStream.close();
+            gatekeeper.unlock();
         }
     }
 
@@ -237,18 +256,27 @@ import java.util.concurrent.ConcurrentMap;
      */
     private boolean setValue(String propertyName, String value, boolean sync) throws NullPointerException
     {
-        ChangeStack<String> stack = properties.get(propertyName);
-        if (stack == null)
+        gatekeeper.signIn();
+        try
         {
-            ChangeStack<String> newStack = new ChangeStack<String>(value, sync);
-            stack = properties.putIfAbsent(propertyName, newStack);
+            ChangeStack<String> stack = properties.get(propertyName);
             if (stack == null)
             {
-                return true;
+                ChangeStack<String> newStack = new ChangeStack<String>(value,
+                                                                       sync);
+                stack = properties.putIfAbsent(propertyName, newStack);
+                if (stack == null)
+                {
+                    return true;
+                }
             }
-        }
 
-        return sync ? stack.sync(value) : stack.push(value);
+            return sync ? stack.sync(value) : stack.push(value);
+        }
+        finally
+        {
+            gatekeeper.signOut();
+        }
     }
 
     /**
@@ -274,22 +302,30 @@ import java.util.concurrent.ConcurrentMap;
      */
     public boolean resetToDefault(String propertyName)
     {
-        /*
-         * If this property was added with no default value, all we can do is
-         * remove the property entirely.
-         */
-        String defaultValue = getDefaultValue(propertyName);
-        if (defaultValue == null)
+        gatekeeper.signIn();
+        try
         {
-            return properties.remove(propertyName) != null;
-        }
+            /*
+             * If this property was added with no default value, all we can do
+             * is remove the property entirely.
+             */
+            String defaultValue = getDefaultValue(propertyName);
+            if (defaultValue == null)
+            {
+                return properties.remove(propertyName) != null;
+            }
 
-        /*
-         * Every property with a default value is guaranteed to have a stack.
-         * Since we just confirmed the existence of a default value, we know the
-         * stack is available.
-         */
-        return properties.get(propertyName).push(defaultValue);
+            /*
+             * Every property with a default value is guaranteed to have a
+             * stack. Since we just confirmed the existence of a default value,
+             * we know the stack is available.
+             */
+            return properties.get(propertyName).push(defaultValue);
+        }
+        finally
+        {
+            gatekeeper.signOut();
+        }
     }
 
     /**
@@ -297,19 +333,27 @@ import java.util.concurrent.ConcurrentMap;
      */
     public void resetToDefaults()
     {
-        for (Iterator<Entry<String, ChangeStack<String>>> iter = properties.entrySet()
-                                                                           .iterator(); iter.hasNext();)
+        gatekeeper.signIn();
+        try
         {
-            Entry<String, ChangeStack<String>> entry = iter.next();
-
-            String defaultValue = getDefaultValue(entry.getKey());
-            if (defaultValue == null)
+            for (Iterator<Entry<String, ChangeStack<String>>> iter = properties.entrySet()
+                                                                               .iterator(); iter.hasNext();)
             {
-                iter.remove();
-                continue;
-            }
+                Entry<String, ChangeStack<String>> entry = iter.next();
 
-            entry.getValue().push(defaultValue);
+                String defaultValue = getDefaultValue(entry.getKey());
+                if (defaultValue == null)
+                {
+                    iter.remove();
+                    continue;
+                }
+
+                entry.getValue().push(defaultValue);
+            }
+        }
+        finally
+        {
+            gatekeeper.signOut();
         }
     }
 
@@ -324,13 +368,21 @@ import java.util.concurrent.ConcurrentMap;
      */
     public boolean isModified(String propertyName)
     {
-        ChangeStack<String> stack = properties.get(propertyName);
-        if (stack == null)
+        gatekeeper.signIn();
+        try
         {
-            return false;
-        }
+            ChangeStack<String> stack = properties.get(propertyName);
+            if (stack == null)
+            {
+                return false;
+            }
 
-        return stack.isModified();
+            return stack.isModified();
+        }
+        finally
+        {
+            gatekeeper.signOut();
+        }
     }
 
     /**
@@ -343,15 +395,23 @@ import java.util.concurrent.ConcurrentMap;
      */
     public boolean isModified()
     {
-        for (ChangeStack<String> stack : properties.values())
+        gatekeeper.signIn();
+        try
         {
-            if (stack.isModified())
+            for (ChangeStack<String> stack : properties.values())
             {
-                return true;
+                if (stack.isModified())
+                {
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        }
+        finally
+        {
+            gatekeeper.signOut();
+        }
     }
 
     /**
@@ -412,5 +472,39 @@ import java.util.concurrent.ConcurrentMap;
     public Properties getDefaults()
     {
         return copyProperties(defaults);
+    }
+
+    private static class Gatekeeper
+    {
+        private final ReadWriteLock lock;
+
+        public Gatekeeper()
+        {
+            /*
+             * This lock must be fair so that acquiring the write lock takes
+             * precedence over the read lock.
+             */
+            lock = new ReentrantReadWriteLock(true);
+        }
+
+        public void signIn()
+        {
+            lock.readLock().lock();
+        }
+
+        public void signOut()
+        {
+            lock.readLock().unlock();
+        }
+
+        public void lock()
+        {
+            lock.writeLock().lock();
+        }
+
+        public void unlock()
+        {
+            lock.writeLock().unlock();
+        }
     }
 }
