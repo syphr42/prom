@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -39,6 +40,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 /* default */class ManagedProperties
 {
+    /**
+     * The gatekeeper acts as a barrier that protects any action that has an
+     * effect on the {@link ChangeStack#isModified()} value of a property.
+     * Normally the gatekeeper will allow full access as the synchronization
+     * policy of {@link ChangeStack} and {@link ConcurrentMap} will keep things
+     * correct. However, when it's time to save the current state of the
+     * properties to the file system, the gatekeeper will lock all threads out
+     * except the one doing the saving. This ensures that whether the save
+     * succeeds or fails, the properties are all marked appropriately.
+     */
     private final Gatekeeper gatekeeper;
 
     /**
@@ -474,34 +485,68 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         return copyProperties(defaults);
     }
 
+    /**
+     * This class is basically a syntactic wrapper to {@link ReadWriteLock}. The
+     * point here is that there is a normal flow that covers most of the actions
+     * and no special locking is required for this. These actions will call
+     * {@link #signIn()} before and {@link #signOut()} afterwards (with a proper
+     * try-finally as with any other {@link Lock}). However, when the infrequent
+     * operation comes along that must have some critical code to itself, it
+     * will call {@link #lock()} before and {@link #unlock()} after (again in a
+     * proper try-finally).<br>
+     * <br> {@link #lock()} will not return until all {@link #signIn() signed in}
+     * threads have {@link #signOut() signed out}. While locked, no other
+     * threads may {@link #signIn()}. When a lock is requested, no other threads
+     * requesting to {@link #signIn()} will be allowed until {@link #unlock()}
+     * is issued.
+     * 
+     * @author Gregory P. Moyer
+     */
     private static class Gatekeeper
     {
-        private final ReadWriteLock lock;
+        /**
+         * This lock provides the multiple thread sign in/out as a read lock and
+         * the single thread lock/unlock as a write lock. The lock itself must
+         * be declared &quot;fair&quot; so that acquiring the write lock takes
+         * precedence over another thread acquiring the read lock. In other
+         * words, {@link #lock()} wins over {@link #signIn()}.
+         */
+        private final ReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-        public Gatekeeper()
-        {
-            /*
-             * This lock must be fair so that acquiring the write lock takes
-             * precedence over the read lock.
-             */
-            lock = new ReentrantReadWriteLock(true);
-        }
-
+        /**
+         * Register that this thread is entering a protected section, but with
+         * no requirement for atomic access.
+         */
         public void signIn()
         {
             lock.readLock().lock();
         }
 
+        /**
+         * Unregister this thread from the multi-threaded protected section.
+         */
         public void signOut()
         {
             lock.readLock().unlock();
         }
 
+        /**
+         * Request a lock on the protected section. This method will return once
+         * all currently {@link #signIn() signed in} threads have
+         * {@link #signOut() signed out}. New threads requesting to
+         * {@link #signIn() sign in} will have to wait until {@link #unlock()}
+         * is called starting as soon as a lock is requested (potentially before
+         * it is granted).
+         */
         public void lock()
         {
             lock.writeLock().lock();
         }
 
+        /**
+         * Release the protected section and allow threads waiting to
+         * {@link #signIn()} to do so.
+         */
         public void unlock()
         {
             lock.writeLock().unlock();
