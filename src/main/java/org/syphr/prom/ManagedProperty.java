@@ -18,6 +18,7 @@ package org.syphr.prom;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Future;
 
 /**
  * This class provides the properties management API of {@link PropertiesManager} with
@@ -369,6 +370,27 @@ public class ManagedProperty<T extends Enum<T>>
     public void saveProperty(String value) throws IOException
     {
         manager.saveProperty(propertyKey, value);
+    }
+    
+    /**
+     * Delegate to {@link PropertiesManager#saveProperty(Enum)}.
+     * 
+     * @throws IOException
+     *             see delegate
+     */
+    public void saveProperty() throws IOException
+    {
+        manager.saveProperty(propertyKey);
+    }
+
+    /**
+     * Delegate to {@link PropertiesManager#savePropertyNB(Enum)}.
+     * 
+     * @return see delegate
+     */
+    public Future<Void> savePropertyNB()
+    {
+        return manager.savePropertyNB(propertyKey);
     }
 
     /**
