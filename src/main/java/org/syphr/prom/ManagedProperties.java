@@ -187,18 +187,60 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      */
     public void save(File file, String comment, boolean saveDefaults) throws IOException
     {
+        save(file, comment, saveDefaults, null);
+    }
+
+    /**
+     * Save the current state of the given property to the given file without
+     * saving all of the other properties within this instance.
+     * 
+     * @param file
+     *            the file to which the current properties and their values will
+     *            be written
+     * @param comment
+     *            an optional comment to put at the top of the file (
+     *            <code>null</code> means no comment)
+     * @param saveDefaults
+     *            if <code>true</code>, values that match the default will be
+     *            written to the file; otherwise values matching the default
+     *            will be skipped
+     * @param propertyName
+     *            the name of the property to save at its current value while
+     *            the others will retain the last saved value (if
+     *            <code>null</code>, all properties will be saved with their
+     *            current values)
+     * @throws IOException
+     *             if there is an error writing the given file
+     */
+    public void save(File file,
+                     String comment,
+                     boolean saveDefaults,
+                     String propertyName) throws IOException
+    {
         gatekeeper.lock();
         try
         {
             FileOutputStream outputStream = new FileOutputStream(file);
             try
             {
-                Properties tmpProperties = getProperties(saveDefaults);
+                Properties tmpProperties = getProperties(saveDefaults,
+                                                         propertyName);
                 tmpProperties.store(outputStream, comment);
 
-                for (ChangeStack<String> stack : properties.values())
+                /*
+                 * If we only saved a single property, only that property should
+                 * be marked synced.
+                 */
+                if (propertyName != null)
                 {
-                    stack.synced();
+                    properties.get(propertyName).synced();
+                }
+                else
+                {
+                    for (ChangeStack<String> stack : properties.values())
+                    {
+                        stack.synced();
+                    }
                 }
             }
             finally
@@ -457,19 +499,66 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      */
     public Properties getProperties(boolean includeDefaults)
     {
+        return getProperties(includeDefaults, null);
+    }
+
+    /**
+     * Retrieve a {@link Properties} object that contains the properties managed
+     * by this instance. If a non-<code>null</code> property name is given, the
+     * values will be the last saved value for each property except the given
+     * one. Otherwise, the properties will all be the current values. This is
+     * useful for saving a change to a single property to disk without also
+     * saving any other changes that have been made. <br>
+     * <br>
+     * Please note that the returned {@link Properties} object is not connected
+     * in any way to this instance and is only a snapshot of what the properties
+     * looked like at the time the request was fulfilled.
+     * 
+     * @param includeDefaults
+     *            if <code>true</code>, values that match the default will be
+     *            stored directly in the properties map; otherwise values
+     *            matching the default will only be available through the
+     *            {@link Properties} concept of defaults (as a fallback and not
+     *            written to the file system if this object is stored)
+     * @param propertyName
+     *            the name of the property whose current value should be
+     *            provided while all others will be the last saved value (if
+     *            this is <code>null</code>, all values will be current)
+     * 
+     * @return a {@link Properties} instance containing the properties managed
+     *         by this instance (including defaults as defined by the given
+     *         flag)
+     */
+    public Properties getProperties(boolean includeDefaults, String propertyName)
+    {
         Properties tmpProperties = new Properties(defaults);
 
         for (Entry<String, ChangeStack<String>> entry : properties.entrySet())
         {
-            String propertyName = entry.getKey();
-            String value = entry.getValue().getCurrentValue();
+            String entryName = entry.getKey();
 
-            if (!includeDefaults && value.equals(getDefaultValue(propertyName)))
+            /*
+             * If we are only concerned with a single property, we need to grab
+             * the last saved value for all of the other properties.
+             */
+            String value = propertyName == null
+                           || propertyName.equals(entryName)
+                    ? entry.getValue().getCurrentValue()
+                    : entry.getValue().getSyncedValue();
+
+            /*
+             * The value could be null if the property has no default, was set
+             * without saving, and now the saved value is requested. In which
+             * case, like the case of a default value where defaults are not
+             * being included, the property can be skipped.
+             */
+            if (value == null
+                || (!includeDefaults && value.equals(getDefaultValue(entryName))))
             {
                 continue;
             }
 
-            tmpProperties.setProperty(propertyName, value);
+            tmpProperties.setProperty(entryName, value);
         }
 
         return tmpProperties;

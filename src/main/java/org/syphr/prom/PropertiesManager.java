@@ -872,7 +872,7 @@ public class PropertiesManager<T extends Enum<T>>
      * <br>
      * Please note that the Enum value saved here is case insensitive. See
      * {@link #getEnumProperty(Enum, Class)} for additional details.
-     *
+     * 
      * @param <E>
      *            the type of Enum value to save
      * @param property
@@ -880,7 +880,8 @@ public class PropertiesManager<T extends Enum<T>>
      * @param value
      *            the value to save
      * @throws IOException
-     *             if there is an error while attempting to save the properties
+     *             if there is an error while attempting to write the property
+     *             to the file
      */
     public <E extends Enum<E>> void saveProperty(T property, E value) throws IOException
     {
@@ -890,13 +891,14 @@ public class PropertiesManager<T extends Enum<T>>
     /**
      * Save the given property using an object's string representation. See
      * {@link #saveProperty(Enum, String)} for additional details.
-     *
+     * 
      * @param property
      *            the property whose value is being saved
      * @param value
      *            the value to save
      * @throws IOException
-     *             if there is an error while attempting to save the properties
+     *             if there is an error while attempting to write the property
+     *             to the file
      */
     public void saveProperty(T property, Object value) throws IOException
     {
@@ -904,25 +906,112 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Modify the value of the given property and save all properties to
-     * permanent storage.<br>
+     * Modify the value of the given property and save <b>only that change</b>
+     * to permanent storage. This method will not save other properties whose
+     * values may have been modified since the file was last loaded or saved.
+     * Any modifications that have been made to other properties will still be
+     * set, but the file will not reflect those changes until {@link #save()} or
+     * {@link #saveNB()} is called.<br>
      * <br>
-     * Note that there is no guarantee that the modification and saving the
-     * properties will be atomic. In other words, it is possible that this call
-     * will modify the value, another call will further change the value, and
-     * then the properties will be saved.
-     *
+     * Note that there is no guarantee that the modification and saving will be
+     * atomic. In other words, it is possible that this call will modify the
+     * value, another call will further change the value, and then the property
+     * will be saved.
+     * 
      * @param property
      *            the property whose value is being saved
      * @param value
      *            the value to save
      * @throws IOException
-     *             if there is an error while attempting to save the properties
+     *             if there is an error while attempting to write the property
+     *             to the file
      */
     public void saveProperty(T property, String value) throws IOException
     {
         setProperty(property, value);
-        save();
+        saveProperty(property);
+    }
+
+    /**
+     * Save the current value of the given property to the file without
+     * modifying the values of any other properties in the file. In other words,
+     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * property after this call completes, but it will return <code>true</code>
+     * for any other properties that have been modified since the last load or
+     * save.<br>
+     * <br>
+     * This method will block and wait for the property to be saved. See
+     * {@link #savePropertyNB()} for a non-blocking version.
+     * 
+     * @param property
+     *            the property to save
+     * @throws IOException
+     *             if there is an error while attempting to write the property
+     *             to the file
+     */
+    public void saveProperty(T property) throws IOException
+    {
+        try
+        {
+            Future<Void> task = savePropertyNB(property);
+            task.get();
+        }
+        catch (ExecutionException e)
+        {
+            Throwable t = e.getCause();
+
+            if (t instanceof IOException)
+            {
+                throw (IOException) t;
+            }
+
+            throw new IOException(t);
+        }
+        catch (InterruptedException e)
+        {
+            throw new IOException("Saving of the property "
+                                  + property
+                                  + " to file \""
+                                  + getFile().getAbsolutePath()
+                                  + "\" was interrupted.");
+        }
+    }
+
+    /**
+     * Save the current value of the given property to the file without
+     * modifying the values of any other properties in the file. In other words,
+     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * property after this call completes, but it will return <code>true</code>
+     * for any other properties that have been modified since the last load or
+     * save.<br>
+     * <br>
+     * This method will not block to wait for the properties to be saved. See
+     * {@link #saveProperty()} for a blocking version.
+     * 
+     * @param property
+     *            the property to save
+     * @return a task representing this save request
+     * @throws IOException
+     *             if there is an error while attempting to write the property
+     *             to the file
+     */
+    public Future<Void> savePropertyNB(final T property)
+    {
+        Callable<Void> task = new Callable<Void>()
+        {
+            @Override
+            public Void call() throws Exception
+            {
+                properties.save(getFile(),
+                                comment,
+                                isSavingDefaults(),
+                                getTranslator().getPropertyName(property));
+                firePropertySaved(property);
+                return null;
+            }
+        };
+
+        return executor.submit(task);
     }
 
     /**
@@ -1088,9 +1177,12 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Notify all listeners that the properties have been saved.
+     * Notify all listeners that a property has been saved.
+     * 
+     * @param property
+     *            the property whose value has been saved
      */
-    private void firePropertiesSaved()
+    private void firePropertySaved(T property)
     {
         PropertyEvent<T> event = null;
 
@@ -1098,11 +1190,19 @@ public class PropertiesManager<T extends Enum<T>>
         {
             if (event == null)
             {
-                event = new PropertyEvent<T>(this, null);
+                event = new PropertyEvent<T>(this, property);
             }
 
             l.saved(event);
         }
+    }
+
+    /**
+     * Notify all listeners that the properties have been saved.
+     */
+    private void firePropertiesSaved()
+    {
+        firePropertySaved(null);
     }
 
     /**

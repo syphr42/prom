@@ -483,6 +483,38 @@ public class PropertiesManagerTest
                             test2Manager.getProperties(),
                             copy.getProperties());
     }
+    
+    @Test
+    public void testSavingPropertyDoesNotSaveAllProperties() throws Exception
+    {
+        PropertiesManager<Key2> copy = test2Manager.copy(new File(TEST_DATA_DIR,
+                                                                  "SavingPropertyDoesNotSaveAllProperties.properties"));
+        copy.setProperty(Key2.VALUE_NO_DEFAULT, "a value");
+        copy.setProperty(Key2.VALUE_STRING, "a non-default value");
+        
+        int value = 999999;
+        copy.saveProperty(Key2.VALUE_INT, value);
+
+        Assert.assertTrue(Key2.VALUE_NO_DEFAULT.name()
+                                  + " has been changed, but not saved",
+                          copy.isModified(Key2.VALUE_NO_DEFAULT));
+        Assert.assertTrue(Key2.VALUE_STRING.name()
+                                  + " has been changed, but not saved",
+                          copy.isModified(Key2.VALUE_STRING));
+        Assert.assertFalse(Key2.VALUE_INT.name()
+                                   + " has been changed and saved",
+                           copy.isModified(Key2.VALUE_INT));
+
+        copy.load();
+
+        Assert.assertArrayEquals("3 values were changed, but only 1 should have been saved",
+                                 new Object[] { null,
+                                               getTest2DefaultProperty(Key2.VALUE_STRING),
+                                               value },
+                                 new Object[] { copy.getProperty(Key2.VALUE_NO_DEFAULT),
+                                               copy.getProperty(Key2.VALUE_STRING),
+                                               copy.getIntegerProperty(Key2.VALUE_INT) });
+    }
 
     public static enum Key1 implements Defaultable
     {
