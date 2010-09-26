@@ -18,14 +18,14 @@ package org.syphr.prom;
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -48,9 +48,10 @@ public class PropertiesManager<T extends Enum<T>>
     private final List<PropertyListener<T>> listeners = new CopyOnWriteArrayList<PropertyListener<T>>();
 
     /**
-     * A cache of {@link ManagedProperty managed properties} that are created on demand.
+     * A cache of {@link PropertyManager individual property managers} that are
+     * created on demand.
      */
-    private final Map<T, ManagedProperty<T>> managedPropertyCache = new HashMap<T, ManagedProperty<T>>();
+    private final ConcurrentMap<T, PropertyManager<T>> propertyManagerCache = new ConcurrentHashMap<T, PropertyManager<T>>();
 
     /**
      * An object used to retrieve the raw, internal value of a given property. This is
@@ -148,7 +149,7 @@ public class PropertiesManager<T extends Enum<T>>
      * does not currently exist and then call {@link #save()}. This would
      * effectively copy the properties file.<br>
      * <br>
-     * Note that this method does not copy listeners or {@link ManagedProperty}
+     * Note that this method does not copy listeners or {@link PropertyManager}
      * instances. It will also install the current {@link Translator},
      * {@link Evaluator}, {@link ExecutorService}, as well as the default
      * {@link Properties} into the new instance.
@@ -258,20 +259,24 @@ public class PropertiesManager<T extends Enum<T>>
      * @return the encapsulation of the functionality of this manager as it pertains to a
      *         single property
      */
-    public ManagedProperty<T> getManagedProperty(T property)
+    public PropertyManager<T> getPropertyManager(T property)
     {
-        synchronized (managedPropertyCache)
+        PropertyManager<T> propertyManager = propertyManagerCache.get(property);
+
+        if (propertyManager == null)
         {
-            ManagedProperty<T> managedProperty = managedPropertyCache.get(property);
+            PropertyManager<T> newPropertyManager = new PropertyManager<T>(property,
+                                                                           this);
 
-            if (managedProperty == null)
+            propertyManager = propertyManagerCache.putIfAbsent(property,
+                                                               newPropertyManager);
+            if (propertyManager == null)
             {
-                managedProperty = new ManagedProperty<T>(property, this);
-                managedPropertyCache.put(property, managedProperty);
+                propertyManager = newPropertyManager;
             }
-
-            return managedProperty;
         }
+
+        return propertyManager;
     }
 
     /**

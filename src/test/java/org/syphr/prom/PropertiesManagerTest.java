@@ -295,8 +295,8 @@ public class PropertiesManagerTest
     public void testManagedPropertiesCached()
     {
         Assert.assertSame("Single property managers are not cached correctly",
-                          test1Manager.getManagedProperty(Key1.SOME_KEY),
-                          test1Manager.getManagedProperty(Key1.SOME_KEY));
+                          test1Manager.getPropertyManager(Key1.SOME_KEY),
+                          test1Manager.getPropertyManager(Key1.SOME_KEY));
     }
     
     @Test

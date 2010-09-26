@@ -24,15 +24,15 @@ import java.util.concurrent.Future;
  * This class provides the properties management API of {@link PropertiesManager} with
  * respect to a single property.<br>
  * <br>
- * To get access to an instance of this class, simply use
- * {@link PropertiesManager#getManagedProperty(Enum)}.
+ * To get access to an instance of this class, use
+ * {@link PropertiesManager#getPropertyManager(Enum)}.
  *
  * @param <T>
  *            the property key type
  *
  * @author Gregory P. Moyer
  */
-public class ManagedProperty<T extends Enum<T>>
+public class PropertyManager<T extends Enum<T>>
 {
     /**
      * Listeners that are waiting for notifications specific to the property managed by
@@ -131,7 +131,7 @@ public class ManagedProperty<T extends Enum<T>>
      * @param manager
      *            the parent manager
      */
-    /* default */ManagedProperty(T propertyKey, PropertiesManager<T> manager)
+    /* default */PropertyManager(T propertyKey, PropertiesManager<T> manager)
     {
         listeners = new CopyOnWriteArrayList<PropertyListener<T>>();
 
