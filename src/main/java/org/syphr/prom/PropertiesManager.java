@@ -730,6 +730,86 @@ public class PropertiesManager<T extends Enum<T>>
     {
         return getEvaluator().referenceAt(getRawProperty(property), position, getRetriever());
     }
+    
+    /**
+     * Load the current value of the given property from the file without
+     * modifying the values of any other properties. In other words,
+     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * property after this call completes, but it will return <code>true</code>
+     * for any other properties that have been modified since the last load or
+     * save.<br>
+     * <br>
+     * This method will block and wait for the property to be loaded. See
+     * {@link #loadPropertyNB(Enum)} for a non-blocking version.
+     * 
+     * @param property
+     *            the property to load
+     * @throws IOException
+     *             if there is an error while attempting to read the property
+     *             from the file
+     */
+    public void loadProperty(T property) throws IOException
+    {
+        try
+        {
+            Future<Void> task = loadPropertyNB(property);
+            task.get();
+        }
+        catch (ExecutionException e)
+        {
+            Throwable t = e.getCause();
+
+            if (t instanceof IOException)
+            {
+                throw (IOException) t;
+            }
+
+            throw new IOException(t);
+        }
+        catch (InterruptedException e)
+        {
+            throw new IOException("Loading of the property "
+                                  + property
+                                  + " from file \""
+                                  + getFile().getAbsolutePath()
+                                  + "\" was interrupted.");
+        }
+    }
+
+    /**
+     * Load the current value of the given property from the file without
+     * modifying the values of any other properties. In other words,
+     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * property after this call completes, but it will return <code>true</code>
+     * for any other properties that have been modified since the last load or
+     * save.<br>
+     * <br>
+     * This method will not block to wait for the property to be loaded. See
+     * {@link #loadProperty(Enum)} for a blocking version.
+     * 
+     * @param property
+     *            the property to save
+     * @return a task representing this save request
+     * @throws IOException
+     *             if there is an error while attempting to write the property
+     *             to the file
+     */
+    public Future<Void> loadPropertyNB(final T property)
+    {
+        Callable<Void> task = new Callable<Void>()
+        {
+            @Override
+            public Void call() throws Exception
+            {
+                properties.load(getFile(),
+                                getTranslator().getPropertyName(property));
+                firePropertyLoaded(property);
+                return null;
+            }
+        };
+
+        return executor.submit(task);
+    }
 
     /**
      * Load the current values of all properties.<br>
@@ -946,7 +1026,7 @@ public class PropertiesManager<T extends Enum<T>>
      * save.<br>
      * <br>
      * This method will block and wait for the property to be saved. See
-     * {@link #savePropertyNB()} for a non-blocking version.
+     * {@link #savePropertyNB(Enum)} for a non-blocking version.
      * 
      * @param property
      *            the property to save
@@ -990,8 +1070,8 @@ public class PropertiesManager<T extends Enum<T>>
      * for any other properties that have been modified since the last load or
      * save.<br>
      * <br>
-     * This method will not block to wait for the properties to be saved. See
-     * {@link #saveProperty()} for a blocking version.
+     * This method will not block to wait for the property to be saved. See
+     * {@link #saveProperty(Enum)} for a blocking version.
      * 
      * @param property
      *            the property to save
@@ -1164,9 +1244,12 @@ public class PropertiesManager<T extends Enum<T>>
     }
 
     /**
-     * Notify all listeners that the properties have been loaded.
+     * Notify all listeners that a property has been loaded.
+     * 
+     * @param property
+     *            the property whose value has been loaded
      */
-    private void firePropertiesLoaded()
+    private void firePropertyLoaded(T property)
     {
         PropertyEvent<T> event = null;
 
@@ -1174,11 +1257,19 @@ public class PropertiesManager<T extends Enum<T>>
         {
             if (event == null)
             {
-                event = new PropertyEvent<T>(this, null);
+                event = new PropertyEvent<T>(this, property);
             }
 
             l.loaded(event);
         }
+    }
+    
+    /**
+     * Notify all listeners that the properties have been loaded.
+     */
+    private void firePropertiesLoaded()
+    {
+        firePropertyLoaded(null);
     }
 
     /**

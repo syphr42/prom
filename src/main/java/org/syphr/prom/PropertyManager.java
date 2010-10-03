@@ -295,6 +295,27 @@ public class PropertyManager<T extends Enum<T>>
     {
         return manager.referenceAt(propertyKey, position);
     }
+    
+    /**
+     * Delegate to {@link PropertiesManager#loadProperty(Enum)}.
+     * 
+     * @throws IOException
+     *             see delegate
+     */
+    public void loadProperty() throws IOException
+    {
+        manager.loadProperty(propertyKey);
+    }
+
+    /**
+     * Delegate to {@link PropertiesManager#loadPropertyNB(Enum)}.
+     * 
+     * @return see delegate
+     */
+    public Future<Void> loadPropertyNB()
+    {
+        return manager.loadPropertyNB(propertyKey);
+    }
 
     /**
      * Delegate to {@link PropertiesManager#setProperty(Enum, Enum)}.

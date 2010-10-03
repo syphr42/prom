@@ -108,23 +108,52 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
     }
 
     /**
-     * Load the given file.
+     * Load the given file. The state of all properties present in this instance
+     * will reflect the state of the file after this call. This means that any
+     * properties that do not currently equal the value in the file will be
+     * changed and any properties that do not exist in the file or the defaults
+     * will be removed. It also means that after this call completes,
+     * {@link #isModified()} will return <code>false</code>.
      * 
      * @param file
      *            the file containing the current property values (this file
-     *            does not have to exist)
+     *            does not have to exist, in which case all defaults are
+     *            assumed)
      * @throws IOException
      *             if there is a file system error while attempting to read the
      *             file
      */
     public void load(File file) throws IOException
     {
+        load(file, null);
+    }
+
+    /**
+     * Load the given property from the given file. If the property's value does
+     * not currently equal the value in the file, the value will be changed. If
+     * the property does not exist in the file or the defaults, it will be
+     * removed. Also, after this call completes, {@link #isModified(String)}
+     * will return <code>false</code> for this property.
+     * 
+     * @param file
+     *            the file containing the current property values (this file
+     *            does not have to exist, in which case the default value is
+     *            assumed)
+     * @param propertyName
+     *            the property to update from the file (this can be
+     *            <code>null</code>, in which case all properties will be
+     *            updated)
+     * @throws IOException
+     *             if there is a file system error while attempting to read the
+     *             file
+     */
+    public void load(File file, String propertyName) throws IOException
+    {
         Properties tmpProperties = new Properties(defaults);
 
         /*
-         * We do not want to throw a FileNotFoundException here because it is OK
-         * if the file does not exist. In this case, default values will be
-         * used.
+         * Do not throw a FileNotFoundException here because it is OK if the
+         * file does not exist. In this case, default values will be used.
          */
         if (file.isFile())
         {
@@ -137,6 +166,26 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
             {
                 inputStream.close();
             }
+        }
+
+        /*
+         * If a property name was specified, only load that property and leave
+         * the rest alone.
+         */
+        if (propertyName != null)
+        {
+            String value = tmpProperties.getProperty(propertyName);
+
+            if (value == null)
+            {
+                properties.remove(propertyName);
+            }
+            else
+            {
+                setValue(propertyName, value, true);
+            }
+
+            return;
         }
 
         Set<String> tmpPropertyNames = tmpProperties.stringPropertyNames();

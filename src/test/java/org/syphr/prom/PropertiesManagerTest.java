@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -514,6 +515,42 @@ public class PropertiesManagerTest
                                  new Object[] { copy.getProperty(Key2.VALUE_NO_DEFAULT),
                                                copy.getProperty(Key2.VALUE_STRING),
                                                copy.getIntegerProperty(Key2.VALUE_INT) });
+    }
+    
+    @Test
+    public void testLoadingPropertyDoesNotLoadAllProperties() throws IOException
+    {
+        test2Manager.setProperty(Key2.VALUE_NO_DEFAULT, "a value");
+        test2Manager.setProperty(Key2.VALUE_STRING, "a non-default value");
+        test2Manager.setProperty(Key2.VALUE_INT, 999999);
+
+        test2Manager.loadProperty(Key2.VALUE_INT);
+
+        Assert.assertTrue(Key2.VALUE_NO_DEFAULT.name()
+                                  + " has been changed, but not saved",
+                          test2Manager.isModified(Key2.VALUE_NO_DEFAULT));
+        Assert.assertTrue(Key2.VALUE_STRING.name()
+                                  + " has been changed, but not saved",
+                          test2Manager.isModified(Key2.VALUE_STRING));
+        Assert.assertFalse(Key2.VALUE_INT.name()
+                                   + " has been changed and saved",
+                           test2Manager.isModified(Key2.VALUE_INT));
+    }
+    
+    @Test
+    public void testLoadingPropertySendsCorrectEvent() throws IOException
+    {
+        Capture<PropertyEvent<Key2>> event = new Capture<PropertyEvent<Key2>>();
+        monitor2.loaded(EasyMock.capture(event));
+        EasyMock.replay(monitor2);
+        
+        test2Manager.loadProperty(Key2.VALUE_BOOLEAN);
+        
+        EasyMock.verify(monitor2);
+        
+        Assert.assertEquals("The event should have specified the key that was loaded",
+                            Key2.VALUE_BOOLEAN,
+                            event.getValue().getProperty());
     }
 
     public static enum Key1 implements Defaultable
