@@ -552,6 +552,14 @@ public class PropertiesManagerTest
                             Key2.VALUE_BOOLEAN,
                             event.getValue().getProperty());
     }
+    
+    @Test
+    public void testWritingToADirThatDoesNotExist() throws IOException
+    {
+        PropertiesManager<Key2> copy = test2Manager.copy(new File(TEST_DATA_DIR, "some/dir/does/not/exist/p.properties"));
+        copy.setSavingDefaults(true);
+        copy.save();
+    }
 
     public static enum Key1 implements Defaultable
     {

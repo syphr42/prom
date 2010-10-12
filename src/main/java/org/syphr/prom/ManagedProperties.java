@@ -269,6 +269,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         gatekeeper.lock();
         try
         {
+            File parent = file.getParentFile();
+            if (!parent.exists() && !parent.mkdirs())
+            {
+                throw new IOException("Directory at \""
+                                      + parent.getAbsolutePath()
+                                      + "\" does not exist and cannot be created");
+            }
+            
             FileOutputStream outputStream = new FileOutputStream(file);
             try
             {
