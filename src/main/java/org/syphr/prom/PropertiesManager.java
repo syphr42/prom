@@ -40,7 +40,7 @@ import java.util.concurrent.Future;
  *
  * @author Gregory P. Moyer
  */
-public class PropertiesManager<T extends Enum<T>>
+public class PropertiesManager<T>
 {
     /**
      * Listeners that are waiting for property events, such as loading or saving the file.

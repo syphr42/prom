@@ -24,7 +24,7 @@ package org.syphr.prom;
  *
  * @author Gregory P. Moyer
  */
-public interface PropertyListener<T extends Enum<T>>
+public interface PropertyListener<T>
 {
     /**
      * Signal that one or more properties have been loaded.

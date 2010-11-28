@@ -55,7 +55,7 @@ public class PropertiesManagers
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        getDefaultTranslator(keyType),
+                                        getEnumTranslator(keyType),
                                         new DefaultEvaluator(),
                                         Executors.newCachedThreadPool());
     }
@@ -84,7 +84,7 @@ public class PropertiesManagers
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        getDefaultTranslator(keyType),
+                                        getEnumTranslator(keyType),
                                         new DefaultEvaluator(),
                                         Executors.newCachedThreadPool());
     }
@@ -117,7 +117,7 @@ public class PropertiesManagers
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        getDefaultTranslator(keyType),
+                                        getEnumTranslator(keyType),
                                         new DefaultEvaluator(),
                                         executor);
     }
@@ -150,7 +150,7 @@ public class PropertiesManagers
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
-                                        getDefaultTranslator(keyType),
+                                        getEnumTranslator(keyType),
                                         new DefaultEvaluator(),
                                         executor);
     }
@@ -170,7 +170,7 @@ public class PropertiesManagers
     public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
                                                                                     Class<T> keyType)
     {
-        Translator<T> translator = getDefaultTranslator(keyType);
+        Translator<T> translator = getEnumTranslator(keyType);
 
         return new PropertiesManager<T>(file,
                                         getDefaultProperties(keyType,
@@ -199,7 +199,7 @@ public class PropertiesManagers
                                                                                     Class<T> keyType,
                                                                                     ExecutorService executor)
     {
-        Translator<T> translator = getDefaultTranslator(keyType);
+        Translator<T> translator = getEnumTranslator(keyType);
 
         return new PropertiesManager<T>(file,
                                         getDefaultProperties(keyType,
@@ -262,12 +262,12 @@ public class PropertiesManagers
                                                                                     Evaluator evaluator,
                                                                                     ExecutorService executor)
     {
-        Translator<T> translator = getDefaultTranslator(keyType);
+        Translator<T> translator = getEnumTranslator(keyType);
 
         return new PropertiesManager<T>(file,
                                         getDefaultProperties(keyType,
                                                              translator),
-                                        getDefaultTranslator(keyType),
+                                        translator,
                                         evaluator,
                                         executor);
     }
@@ -339,18 +339,42 @@ public class PropertiesManagers
 
         return defaults;
     }
+    
+    /**
+     * Create a translator that returns the string that it is given (no
+     * translation).
+     * 
+     * @return the identity translator implementation
+     */
+    public static Translator<String> getIdentityTranslator()
+    {
+        return new Translator<String>()
+        {
+            @Override
+            public String getPropertyName(String propertyKey)
+            {
+                return propertyKey;
+            }
+
+            @Override
+            public String getPropertyKey(String propertyName)
+            {
+                return propertyName;
+            }
+        };
+    }
 
     /**
-     * Get the default translator to convert back and forth between Enums and
+     * Get a simple translator to convert back and forth between Enums and
      * property names (keys).
-     *
+     * 
      * @param <T>
      *            the type of Enum representing the properties
      * @param enumType
      *            the Enum class used to represent the properties
-     * @return the default translator implementation
+     * @return the Enum translator implementation
      */
-    public static <T extends Enum<T>> Translator<T> getDefaultTranslator(final Class<T> enumType)
+    public static <T extends Enum<T>> Translator<T> getEnumTranslator(final Class<T> enumType)
     {
         return new Translator<T>()
         {

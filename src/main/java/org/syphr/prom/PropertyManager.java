@@ -32,7 +32,7 @@ import java.util.concurrent.Future;
  *
  * @author Gregory P. Moyer
  */
-public class PropertyManager<T extends Enum<T>>
+public class PropertyManager<T>
 {
     /**
      * Listeners that are waiting for notifications specific to the property managed by

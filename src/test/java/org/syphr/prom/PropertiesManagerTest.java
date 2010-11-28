@@ -398,7 +398,7 @@ public class PropertiesManagerTest
         
         Assert.assertEquals("After saving with defaults on and no modifications, written file should match default properties",
                             PropertiesManagers.getDefaultProperties(Key1.class,
-                                                                    PropertiesManagers.getDefaultTranslator(Key1.class)),
+                                                                    PropertiesManagers.getEnumTranslator(Key1.class)),
                             PropertiesManagers.getProperties(file));
     }
     
