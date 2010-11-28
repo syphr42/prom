@@ -16,9 +16,9 @@
 package org.syphr.prom;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,6 +70,35 @@ public class PropertiesManagers
      *            the file system location of the properties represented by the
      *            new manager
      * @param defaultFile
+     *            a URL containing default values for the properties
+     *            represented by the new manager
+     * @param keyType
+     *            the enumeration of keys in the properties file
+     * @return a new manager
+     * @throws IOException
+     *             if there is an error while reading the default properties
+     */
+    public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
+                                                                      URL defaultFile,
+                                                                      Class<T> keyType) throws IOException
+    {
+        return new PropertiesManager<T>(file,
+                                        getProperties(defaultFile),
+                                        getDefaultTranslator(keyType),
+                                        new DefaultEvaluator(),
+                                        Executors.newCachedThreadPool());
+    }
+
+    /**
+     * Build a new manager for the given properties file.
+     *
+     * @param <T>
+     *            the type of key used for the new manager
+     *
+     * @param file
+     *            the file system location of the properties represented by the
+     *            new manager
+     * @param defaultFile
      *            a file containing default values for the properties
      *            represented by the new manager
      * @param keyType
@@ -83,6 +112,39 @@ public class PropertiesManagers
      */
     public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
                                                                       File defaultFile,
+                                                                      Class<T> keyType,
+                                                                      ExecutorService executor) throws IOException
+    {
+        return new PropertiesManager<T>(file,
+                                        getProperties(defaultFile),
+                                        getDefaultTranslator(keyType),
+                                        new DefaultEvaluator(),
+                                        executor);
+    }
+
+    /**
+     * Build a new manager for the given properties file.
+     *
+     * @param <T>
+     *            the type of key used for the new manager
+     *
+     * @param file
+     *            the file system location of the properties represented by the
+     *            new manager
+     * @param defaultFile
+     *            a URL containing default values for the properties
+     *            represented by the new manager
+     * @param keyType
+     *            the enumeration of keys in the properties file
+     * @param executor
+     *            a service to handle potentially long running tasks, such as
+     *            interacting with the file system
+     * @return a new manager
+     * @throws IOException
+     *             if there is an error while reading the default properties
+     */
+    public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
+                                                                      URL defaultFile,
                                                                       Class<T> keyType,
                                                                       ExecutorService executor) throws IOException
     {
@@ -221,9 +283,23 @@ public class PropertiesManagers
      */
     public static Properties getProperties(File file) throws IOException
     {
+        return getProperties(file.toURI().toURL());
+    }
+
+    /**
+     * Load values from a URL.
+     *
+     * @param url
+     *            the URL containing default values
+     * @return a new properties instance loaded with values from the given URL
+     * @throws IOException
+     *             if there is an error while reading the given URL
+     */
+    public static Properties getProperties(URL url) throws IOException
+    {
         Properties properties = new Properties();
 
-        InputStream inputStream = new FileInputStream(file);
+        InputStream inputStream = url.openStream();
         try
         {
             properties.load(inputStream);
