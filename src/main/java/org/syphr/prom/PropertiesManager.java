@@ -874,7 +874,7 @@ public class PropertiesManager<T>
      * new value to the file system.<br>
      * <br>
      * Please note that the Enum value set here is case insensitive. See
-     * {@link #getEnumProperty(Enum, Class)} for additional details.
+     * {@link #getEnumProperty(Object, Class)} for additional details.
      *
      * @see #saveProperty(Object, Enum)
      *
