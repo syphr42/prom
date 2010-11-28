@@ -20,7 +20,7 @@ package org.syphr.prom;
  * property or a set of properties.
  *
  * @param <T>
- *            the type of Enums used to defined the property keys
+ *            the type of objects used to defined the property keys
  *
  * @author Gregory P. Moyer
  */

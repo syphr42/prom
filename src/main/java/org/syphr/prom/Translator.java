@@ -22,35 +22,35 @@ package org.syphr.prom;
  * It is required that any implementation be thread safe.
  * 
  * @param <T>
- *            the type of Enums used to defined the properties
+ *            the type of objects used to defined the property keys
  * 
  * @author Gregory P. Moyer
  */
 public interface Translator<T>
 {
     /**
-     * This method translates the Enum key into a string property name that is
+     * This method translates the key object into a string property name that is
      * used in the properties file. There is not likely to be a need for client
      * code to call this method directly. The {@link PropertiesManager} API will
      * take care of reading and writing the actual file.
      * 
      * @param propertyKey
-     *            the Enum key to be translated into a property name
+     *            the key object to be translated into a property name
      * 
      * @return the name that represents this property in the properties file
      */
     public String getPropertyName(T propertyKey);
 
     /**
-     * This method translates the string property name into an Enum key that is
+     * This method translates the string property name into an key object that is
      * used to reference the property via the properties management API. There
      * is not likely to be a need for client code to call this method directly.
      * The {@link PropertiesManager} API will take care of reading and writing
      * the actual file.
      * 
      * @param propertyName
-     *            the property name to be translated into an Enum key constant
-     * @return the associated Enum key constant
+     *            the property name to be translated into an key object
+     * @return the associated key object
      */
     public T getPropertyKey(String propertyName);
 }

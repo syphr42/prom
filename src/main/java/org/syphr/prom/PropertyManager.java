@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
  * respect to a single property.<br>
  * <br>
  * To get access to an instance of this class, use
- * {@link PropertiesManager#getPropertyManager(Enum)}.
+ * {@link PropertiesManager#getPropertyManager(Object)}.
  *
  * @param <T>
  *            the property key type
@@ -152,7 +152,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to PropertiesManager#getProperty(Enum)
+     * @return delegate to PropertiesManager#getProperty(Object)
      */
     public String getProperty()
     {
@@ -160,7 +160,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to {@link PropertiesManager#getRawProperty(Enum)}
+     * @return delegate to {@link PropertiesManager#getRawProperty(Object)}
      */
     public String getRawProperty()
     {
@@ -168,7 +168,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to {@link PropertiesManager#getBooleanProperty(Enum)}
+     * @return delegate to {@link PropertiesManager#getBooleanProperty(Object)}
      */
     public boolean getBooleanProperty()
     {
@@ -176,7 +176,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to {@link PropertiesManager#getIntegerProperty(Enum)}
+     * @return delegate to {@link PropertiesManager#getIntegerProperty(Object)}
      */
     public int getIntegerProperty()
     {
@@ -185,7 +185,7 @@ public class PropertyManager<T>
     
     /**
      * @return delegate to
-     *         {@link PropertiesManager#getIntegerPropertyFallback(Enum)}
+     *         {@link PropertiesManager#getIntegerPropertyFallback(Object)}
      */
     public int getIntegerPropertyFallback()
     {
@@ -193,7 +193,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to {@link PropertiesManager#getLongProperty(Enum)}
+     * @return delegate to {@link PropertiesManager#getLongProperty(Object)}
      */
     public long getLongProperty()
     {
@@ -202,7 +202,7 @@ public class PropertyManager<T>
     
     /**
      * @return delegate to
-     *         {@link PropertiesManager#getLongPropertyFallback(Enum)}
+     *         {@link PropertiesManager#getLongPropertyFallback(Object)}
      */
     public long getLongPropertyFallback()
     {
@@ -210,7 +210,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to {@link PropertiesManager#getFloatProperty(Enum)}
+     * @return delegate to {@link PropertiesManager#getFloatProperty(Object)}
      */
     public float getFloatProperty()
     {
@@ -219,7 +219,7 @@ public class PropertyManager<T>
     
     /**
      * @return delegate to
-     *         {@link PropertiesManager#getFloatPropertyFallback(Enum)}
+     *         {@link PropertiesManager#getFloatPropertyFallback(Object)}
      */
     public float getFloatPropertyFallback()
     {
@@ -227,7 +227,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to {@link PropertiesManager#getDoubleProperty(Enum)}
+     * @return delegate to {@link PropertiesManager#getDoubleProperty(Object)}
      */
     public double getDoubleProperty()
     {
@@ -236,7 +236,7 @@ public class PropertyManager<T>
     
     /**
      * @return delegate to
-     *         {@link PropertiesManager#getDoublePropertyFallback(Enum)}
+     *         {@link PropertiesManager#getDoublePropertyFallback(Object)}
      */
     public double getDoublePropertyFallback()
     {
@@ -248,7 +248,7 @@ public class PropertyManager<T>
      *            see delegate
      * @param type
      *            see delegate
-     * @return delegate to {@link PropertiesManager#getEnumProperty(Enum, Class)}
+     * @return delegate to {@link PropertiesManager#getEnumProperty(Object, Class)}
      */
     public <E extends Enum<E>> E getEnumProperty(Class<E> type)
     {
@@ -261,7 +261,7 @@ public class PropertyManager<T>
      * @param type
      *            see delegate
      * @return delegate to
-     *         {@link PropertiesManager#getEnumPropertyFallback(Enum, Class)}
+     *         {@link PropertiesManager#getEnumPropertyFallback(Object, Class)}
      */
     public <E extends Enum<E>> E getEnumPropertyFallback(Class<E> type)
     {
@@ -269,7 +269,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * @return delegate to {@link PropertiesManager#isDefault(Enum)}
+     * @return delegate to {@link PropertiesManager#isDefault(Object)}
      */
     public boolean isDefault()
     {
@@ -279,7 +279,7 @@ public class PropertyManager<T>
     /**
      * @param property
      *            see delegate
-     * @return delegate to {@link PropertiesManager#isReferencing(Enum, Enum)}
+     * @return delegate to {@link PropertiesManager#isReferencing(Object, Object)}
      */
     public boolean isReferencing(T property)
     {
@@ -289,7 +289,7 @@ public class PropertyManager<T>
     /**
      * @param position
      *            see delegate
-     * @return delegate to {@link PropertiesManager#referenceAt(Enum, int)}
+     * @return delegate to {@link PropertiesManager#referenceAt(Object, int)}
      */
     public Reference referenceAt(int position)
     {
@@ -297,7 +297,7 @@ public class PropertyManager<T>
     }
     
     /**
-     * Delegate to {@link PropertiesManager#loadProperty(Enum)}.
+     * Delegate to {@link PropertiesManager#loadProperty(Object)}.
      * 
      * @throws IOException
      *             see delegate
@@ -308,7 +308,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#loadPropertyNB(Enum)}.
+     * Delegate to {@link PropertiesManager#loadPropertyNB(Object)}.
      * 
      * @return see delegate
      */
@@ -318,7 +318,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#setProperty(Enum, Enum)}.
+     * Delegate to {@link PropertiesManager#setProperty(Object, Enum)}.
      *
      * @param <E>
      *            see delegate
@@ -331,7 +331,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#setProperty(Enum, Object)}.
+     * Delegate to {@link PropertiesManager#setProperty(Object, Object)}.
      *
      * @param value
      *            see delegate
@@ -342,7 +342,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#setProperty(Enum, String)}.
+     * Delegate to {@link PropertiesManager#setProperty(Object, String)}.
      *
      * @param value
      *            see delegate
@@ -353,7 +353,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#saveProperty(Enum, Enum)}.
+     * Delegate to {@link PropertiesManager#saveProperty(Object, Enum)}.
      *
      * @param <E>
      *            see delegate
@@ -368,7 +368,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#saveProperty(Enum, Object)}.
+     * Delegate to {@link PropertiesManager#saveProperty(Object, Object)}.
      *
      * @param value
      *            see delegate
@@ -381,7 +381,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#saveProperty(Enum, String)}.
+     * Delegate to {@link PropertiesManager#saveProperty(Object, String)}.
      *
      * @param value
      *            see delegate
@@ -394,7 +394,7 @@ public class PropertyManager<T>
     }
     
     /**
-     * Delegate to {@link PropertiesManager#saveProperty(Enum)}.
+     * Delegate to {@link PropertiesManager#saveProperty(Object)}.
      * 
      * @throws IOException
      *             see delegate
@@ -405,7 +405,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#savePropertyNB(Enum)}.
+     * Delegate to {@link PropertiesManager#savePropertyNB(Object)}.
      * 
      * @return see delegate
      */
@@ -415,7 +415,7 @@ public class PropertyManager<T>
     }
 
     /**
-     * Delegate to {@link PropertiesManager#resetProperty(Enum)}.
+     * Delegate to {@link PropertiesManager#resetProperty(Object)}.
      */
     public void resetProperty()
     {
@@ -423,7 +423,7 @@ public class PropertyManager<T>
     }
     
     /**
-     * Delegate to {@link PropertiesManager#isModified(Enum)}.
+     * Delegate to {@link PropertiesManager#isModified(Object)}.
      */
     public void isModified()
     {

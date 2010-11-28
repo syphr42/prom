@@ -17,12 +17,11 @@ package org.syphr.prom;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -32,11 +31,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * This class creates a management API for a {@link Properties} file whose keys are
- * described by an Enum.
+ * This class creates a management API for a {@link Properties} file.
  *
  * @param <T>
- *            the type of the Enum that represents the keys of the properties file
+ *            the type that represents the keys of the properties file
  *
  * @author Gregory P. Moyer
  */
@@ -77,7 +75,7 @@ public class PropertiesManager<T>
     private final File file;
 
     /**
-     * The object that determines how to translate between Enum names and property keys.
+     * The object that determines how to translate between key objects and property names.
      */
     private final Translator<T> translator;
 
@@ -121,7 +119,7 @@ public class PropertiesManager<T>
      * @param defaults
      *            default values for the properties represented here
      * @param translator
-     *            the translator to convert between Enum names and property keys
+     *            the translator to convert between key objects and property names
      * @param evaluator
      *            the evaluator to convert nested property references into fully
      *            evaluated strings
@@ -302,8 +300,7 @@ public class PropertiesManager<T>
     }
 
     /**
-     * Retrieve the object that translates between Enum instances and property names
-     * (keys).
+     * Retrieve the object that translates between key objects and property names.
      *
      * @return the property name translator
      */
@@ -350,15 +347,16 @@ public class PropertiesManager<T>
     }
 
     /**
-     * Retrieve the set of keys currently in use by this manager. This encompasses any key
-     * which currently has a value or a default value associated with it. Normally, this
-     * should have the same contents as {@link EnumSet#allOf(Class)}, but it is not
-     * guaranteed.<br>
+     * Retrieve the set of keys currently in use by this manager. This
+     * encompasses any key which currently has a value or a default value
+     * associated with it. Normally, this should have the same contents as an
+     * enumeration of the valid key objects, but it is not guaranteed.<br>
      * <br>
-     * An example of where this set would not have the same contents as the set of Enums
-     * would be if at least one property key has no value defined for it and no default
-     * value associated with it. In that case, it would not be included in this set.
-     *
+     * An example of where this set would not have the same contents as the set
+     * of key objects would be if at least one property key has no value defined
+     * for it and no default value associated with it. In that case, it would
+     * not be included in this set.
+     * 
      * @return the set of keys currently in use by this manager
      */
     public Set<T> keySet()
@@ -660,7 +658,8 @@ public class PropertiesManager<T>
      * is local by design - nothing outside of the properties manager should be
      * directly requesting the default value. Client code should not be
      * concerned with what the default value is specifically, just what the
-     * value is and whether or not it is default (see {@link #isDefault(Enum)}).<br>
+     * value is and whether or not it is default (see {@link #isDefault(Object)}
+     * ).<br>
      * <br>
      * Note that if {@link #isAutoTrim() auto trim} is enabled, this value will
      * be trimmed of whitespace.
@@ -686,7 +685,7 @@ public class PropertiesManager<T>
      * Retrieve the evaluated default value of the given property.<br>
      * <br>
      * For an explanation of why this functionality is hidden, see
-     * {@link #getRawDefaultProperty(Enum)}.
+     * {@link #getRawDefaultProperty(Object)}.
      *
      * @param property
      *            the property whose default value is requested
@@ -734,13 +733,13 @@ public class PropertiesManager<T>
     /**
      * Load the current value of the given property from the file without
      * modifying the values of any other properties. In other words,
-     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * {@link #isModified(Object)} will return <code>false</code> for the given
      * property after this call completes, but it will return <code>true</code>
      * for any other properties that have been modified since the last load or
      * save.<br>
      * <br>
      * This method will block and wait for the property to be loaded. See
-     * {@link #loadPropertyNB(Enum)} for a non-blocking version.
+     * {@link #loadPropertyNB(Object)} for a non-blocking version.
      * 
      * @param property
      *            the property to load
@@ -779,13 +778,13 @@ public class PropertiesManager<T>
     /**
      * Load the current value of the given property from the file without
      * modifying the values of any other properties. In other words,
-     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * {@link #isModified(Object)} will return <code>false</code> for the given
      * property after this call completes, but it will return <code>true</code>
      * for any other properties that have been modified since the last load or
      * save.<br>
      * <br>
      * This method will not block to wait for the property to be loaded. See
-     * {@link #loadProperty(Enum)} for a blocking version.
+     * {@link #loadProperty(Object)} for a blocking version.
      * 
      * @param property
      *            the property to save
@@ -877,7 +876,7 @@ public class PropertiesManager<T>
      * Please note that the Enum value set here is case insensitive. See
      * {@link #getEnumProperty(Enum, Class)} for additional details.
      *
-     * @see #saveProperty(Enum, Enum)
+     * @see #saveProperty(Object, Enum)
      *
      * @param <E>
      *            the type of Enum value to set
@@ -887,7 +886,7 @@ public class PropertiesManager<T>
      *            the value to set
      * @throws IllegalArgumentException
      *             if a <code>null</code> value is given (see
-     *             {@link #resetProperty(Enum)})
+     *             {@link #resetProperty(Object)})
      */
     public <E extends Enum<E>> void setProperty(T property, E value) throws IllegalArgumentException
     {
@@ -903,7 +902,7 @@ public class PropertiesManager<T>
      * Set the given property using an object's string representation. This will not write
      * the new value to the file system.
      *
-     * @see #saveProperty(Enum, Object)
+     * @see #saveProperty(Object, Object)
      *
      * @param property
      *            the property whose value is being set
@@ -911,7 +910,7 @@ public class PropertiesManager<T>
      *            the value to set
      * @throws IllegalArgumentException
      *             if a <code>null</code> value is given (see
-     *             {@link #resetProperty(Enum)})
+     *             {@link #resetProperty(Object)})
      */
     public void setProperty(T property, Object value) throws IllegalArgumentException
     {
@@ -927,7 +926,7 @@ public class PropertiesManager<T>
      * Set the given property using a string. This will not write the new value
      * to the file system.
      *
-     * @see #saveProperty(Enum, String)
+     * @see #saveProperty(Object, String)
      *
      * @param property
      *            the property whose value is being set
@@ -935,7 +934,7 @@ public class PropertiesManager<T>
      *            the value to set
      * @throws IllegalArgumentException
      *             if a <code>null</code> value is given (see
-     *             {@link #resetProperty(Enum)})
+     *             {@link #resetProperty(Object)})
      */
     public void setProperty(T property, String value) throws IllegalArgumentException
     {
@@ -953,10 +952,10 @@ public class PropertiesManager<T>
 
     /**
      * Save the given property using an Enum constant. See
-     * {@link #saveProperty(Enum, String)} for additional details.<br>
+     * {@link #saveProperty(Object, String)} for additional details.<br>
      * <br>
      * Please note that the Enum value saved here is case insensitive. See
-     * {@link #getEnumProperty(Enum, Class)} for additional details.
+     * {@link #getEnumProperty(Object, Class)} for additional details.
      * 
      * @param <E>
      *            the type of Enum value to save
@@ -975,7 +974,7 @@ public class PropertiesManager<T>
 
     /**
      * Save the given property using an object's string representation. See
-     * {@link #saveProperty(Enum, String)} for additional details.
+     * {@link #saveProperty(Object, String)} for additional details.
      * 
      * @param property
      *            the property whose value is being saved
@@ -1020,13 +1019,13 @@ public class PropertiesManager<T>
     /**
      * Save the current value of the given property to the file without
      * modifying the values of any other properties in the file. In other words,
-     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * {@link #isModified(Object)} will return <code>false</code> for the given
      * property after this call completes, but it will return <code>true</code>
      * for any other properties that have been modified since the last load or
      * save.<br>
      * <br>
      * This method will block and wait for the property to be saved. See
-     * {@link #savePropertyNB(Enum)} for a non-blocking version.
+     * {@link #savePropertyNB(Object)} for a non-blocking version.
      * 
      * @param property
      *            the property to save
@@ -1065,13 +1064,13 @@ public class PropertiesManager<T>
     /**
      * Save the current value of the given property to the file without
      * modifying the values of any other properties in the file. In other words,
-     * {@link #isModified(Enum)} will return <code>false</code> for the given
+     * {@link #isModified(Object)} will return <code>false</code> for the given
      * property after this call completes, but it will return <code>true</code>
      * for any other properties that have been modified since the last load or
      * save.<br>
      * <br>
      * This method will not block to wait for the property to be saved. See
-     * {@link #saveProperty(Enum)} for a blocking version.
+     * {@link #saveProperty(Object)} for a blocking version.
      * 
      * @param property
      *            the property to save
