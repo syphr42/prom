@@ -2,8 +2,8 @@ Prom: Properties Management for Java
  
   Prom is a Java API built around the standard java.util.Properties class. 
   It provides lifecycle management to a properties file (loading, saving, 
-  resetting to default values) as well as access to properties using an 
-  Enum constant as the key and convenience methods to retrieve properties 
+  resetting to default values) as well as access to properties using a 
+  custom-defined key and convenience methods to retrieve properties 
   as specific types, such as boolean, integer, Enum, etc. Prom also provides 
   variable substitution (by default, it works in the style of Ant) to allow 
   property references from within a properties file.
