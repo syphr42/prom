@@ -14,178 +14,205 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>org.syphr</groupId>
-  <artifactId>prom</artifactId>
-  <version>2.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
-  
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>4</version>
-  </parent>
-  
-  <name>Prom</name>
-  <description>Prom provides easy access to and lifecycle management for properties files in Java.</description>
-  <url>https://launchpad.net/prom</url>
-  <inceptionYear>2010</inceptionYear>
-  
-  <organization>
-    <name>Gregory P. Moyer</name>
-    <url>http://www.syphr.org</url>
-  </organization>
-  
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  
-  <issueManagement>
-    <system>Launchpad</system>
-    <url>https://bugs.launchpad.net/prom/</url>
-  </issueManagement>
-  
-  <scm>
-    <connection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</connection>
-    <url>https://code.launchpad.net/prom</url>
-    <developerConnection>scm:bazaar:bzr+ssh://bazaar.launchpad.net/~syphr42/prom/trunk/</developerConnection>
-    <tag>HEAD</tag>
-  </scm>
-  
-  <developers>
-  	<developer>
-  		<id>moyerg@syphr.com</id>
-  		<name>Gregory Moyer</name>
-  		<email>moyerg@syphr.com</email>
-  		<roles>
-  			<role>Lead Developer</role>
-  		</roles>
-  	</developer>
-  </developers>
-  
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  </properties>
-  
-  <build>
-  	<plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-                <source>1.6</source>
-                <target>1.6</target>
-            </configuration>
-        </plugin>
-        
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Implementation-Title>${project.name}</Implementation-Title>
-                            <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
-                            <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
-                            <Implementation-Version>${project.version}</Implementation-Version>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-      
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <executions>
-             <execution>
-               <phase>package</phase>
-               <goals>
-                 <goal>assembly</goal>
-               </goals>
-	           <configuration>
-	             <descriptors>
-	               <descriptor>src/main/assembly/bin.xml</descriptor>
-	               <descriptor>src/main/assembly/src.xml</descriptor>
-	             </descriptors>
-	             <tarLongFileMode>gnu</tarLongFileMode>
-	             <outputDirectory>target/assemblies</outputDirectory>
-	           </configuration>
-             </execution>
-           </executions>
-        </plugin>
-        
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.1</version>
-          <configuration>
-            <pushChanges>false</pushChanges>
-            <localCheckout>true</localCheckout>
-          </configuration>
-        </plugin>
-  	</plugins>
-  </build>
-  
-  <dependencies>
-  	<dependency>
-  		<groupId>junit</groupId>
-  		<artifactId>junit</artifactId>
-  		<version>4.4</version>
-  		<type>jar</type>
-  		<scope>test</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-io</groupId>
-  		<artifactId>commons-io</artifactId>
-  		<version>1.4</version>
-  		<type>jar</type>
-  		<scope>test</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.easymock</groupId>
-  		<artifactId>easymock</artifactId>
-  		<version>3.0</version>
-  		<type>jar</type>
-  		<scope>test</scope>
-  	</dependency>
-  </dependencies>
-  
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jdepend-maven-plugin</artifactId>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </reporting>
-  
-  <distributionManagement>
-    <site>
-      <id>syphr.org</id>
-      <url>scp://10.0.1.12/var/www/syphr.org/</url>
-    </site>
-  </distributionManagement>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.syphr</groupId>
+	<artifactId>prom</artifactId>
+	<version>2.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>4</version>
+	</parent>
+
+	<name>Prom</name>
+	<description>Prom provides easy access to and lifecycle management for properties files in Java.</description>
+	<url>https://launchpad.net/prom</url>
+	<inceptionYear>2010</inceptionYear>
+
+	<organization>
+		<name>Gregory P. Moyer</name>
+		<url>http://www.syphr.org</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<issueManagement>
+		<system>Launchpad</system>
+		<url>https://bugs.launchpad.net/prom/</url>
+	</issueManagement>
+
+	<scm>
+		<connection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</connection>
+		<url>https://code.launchpad.net/prom</url>
+		<developerConnection>scm:bazaar:bzr+ssh://bazaar.launchpad.net/~syphr42/prom/trunk/</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>moyerg@syphr.com</id>
+			<name>Gregory Moyer</name>
+			<email>moyerg@syphr.com</email>
+			<roles>
+				<role>Lead Developer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<archive>
+						<manifestFile>target/osgi/MANIFEST.MF</manifestFile>
+						<manifestEntries>
+							<Implementation-Title>${project.name}</Implementation-Title>
+							<Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
+							<Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+							<Implementation-Version>${project.version}</Implementation-Version>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.1.0</version>
+				<configuration>
+					<excludeDependencies>true</excludeDependencies>
+					<manifestLocation>target/osgi</manifestLocation>
+					<instructions>
+						<!-- stops the "uses" clauses being added to "Export-Package" manifest entry -->
+						<_nouses>true</_nouses>
+						<!-- Stop the JAVA_1_n_HOME variables from being treated as headers by Bnd -->
+						<_removeheaders>JAVA_1_3_HOME,JAVA_1_4_HOME,JAVA_1_5_HOME,JAVA_1_6_HOME</_removeheaders>
+					</instructions>
+				</configuration>
+				<executions>
+					<execution>
+						<id>bundle-manifest</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>manifest</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>assembly</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/assembly/bin.xml</descriptor>
+								<descriptor>src/main/assembly/src.xml</descriptor>
+							</descriptors>
+							<tarLongFileMode>gnu</tarLongFileMode>
+							<outputDirectory>target/assemblies</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<pushChanges>false</pushChanges>
+					<localCheckout>true</localCheckout>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.4</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.4</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>3.0</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jdepend-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<distributionManagement>
+		<site>
+			<id>syphr.org</id>
+			<url>scp://10.0.1.12/var/www/syphr.org/</url>
+		</site>
+	</distributionManagement>
 </project>
