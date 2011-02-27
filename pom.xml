@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-   Copyright 2010 Gregory P. Moyer
+   Copyright 2010-2011 Gregory P. Moyer
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,20 +24,15 @@
 	<packaging>jar</packaging>
 
 	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>4</version>
+		<groupId>org.syphr</groupId>
+		<artifactId>syphr-parent</artifactId>
+		<version>1-SNAPSHOT</version>
 	</parent>
 
 	<name>Prom</name>
 	<description>Prom provides easy access to and lifecycle management for properties files in Java.</description>
 	<url>https://launchpad.net/prom</url>
 	<inceptionYear>2010</inceptionYear>
-
-	<organization>
-		<name>Gregory P. Moyer</name>
-		<url>http://www.syphr.org</url>
-	</organization>
 
 	<licenses>
 		<license>
@@ -69,65 +64,9 @@
 			</roles>
 		</developer>
 	</developers>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	</properties>
-
+	
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.1</version>
-				<configuration>
-					<archive>
-						<manifestFile>target/osgi/MANIFEST.MF</manifestFile>
-						<manifestEntries>
-							<Implementation-Title>${project.name}</Implementation-Title>
-							<Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
-							<Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
-							<Implementation-Version>${project.version}</Implementation-Version>
-						</manifestEntries>
-					</archive>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>2.1.0</version>
-				<configuration>
-					<excludeDependencies>true</excludeDependencies>
-					<manifestLocation>target/osgi</manifestLocation>
-					<instructions>
-						<!-- stops the "uses" clauses being added to "Export-Package" manifest entry -->
-						<_nouses>true</_nouses>
-						<!-- Stop the JAVA_1_n_HOME variables from being treated as headers by Bnd -->
-						<_removeheaders>JAVA_1_3_HOME,JAVA_1_4_HOME,JAVA_1_5_HOME,JAVA_1_6_HOME</_removeheaders>
-					</instructions>
-				</configuration>
-				<executions>
-					<execution>
-						<id>bundle-manifest</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>manifest</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -184,35 +123,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jdepend-maven-plugin</artifactId>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cobertura-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</reporting>
-
-	<distributionManagement>
-		<site>
-			<id>syphr.org</id>
-			<url>scp://10.0.1.12/var/www/syphr.org/</url>
-		</site>
-	</distributionManagement>
 </project>
