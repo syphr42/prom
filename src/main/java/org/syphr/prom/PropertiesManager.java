@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,11 +92,11 @@ public class PropertiesManager<T>
      * @see #setAutoTrim(boolean)
      */
     private boolean autoTrim = true;
-    
+
     /**
      * A flag to determine whether or not default values are stored to the file
      * when saved. The default value is <code>false</code>.
-     * 
+     *
      * @see #isSavingDefaults()
      * @see #setSavingDefaults(boolean)
      */
@@ -151,7 +151,7 @@ public class PropertiesManager<T>
      * instances. It will also install the current {@link Translator},
      * {@link Evaluator}, {@link ExecutorService}, as well as the default
      * {@link Properties} into the new instance.
-     * 
+     *
      * @param newFile
      *            the file to which the new instance will be based
      * @return a new manager with the same property values and defaults as this
@@ -327,7 +327,7 @@ public class PropertiesManager<T>
      * Please note that the returned {@link Properties} object is not connected
      * in any way to this manager and is only a snapshot of what the properties
      * looked like at the time the request was fulfilled.
-     * 
+     *
      * @return a {@link Properties} instance containing the properties managed
      *         by this instance (including defaults)
      */
@@ -356,7 +356,7 @@ public class PropertiesManager<T>
      * of key objects would be if at least one property key has no value defined
      * for it and no default value associated with it. In that case, it would
      * not be included in this set.
-     * 
+     *
      * @return the set of keys currently in use by this manager
      */
     public Set<T> keySet()
@@ -409,7 +409,7 @@ public class PropertiesManager<T>
 
     /**
      * Retrieve the value of the given property as an integer.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the integer value of the given property
@@ -425,7 +425,7 @@ public class PropertiesManager<T>
      * Retrieve the value of the given property as an integer. If the current
      * value of the specified property cannot be converted to an integer, the
      * default value will be retrieved.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the integer value of the given property or the default value if
@@ -444,10 +444,10 @@ public class PropertiesManager<T>
             return Integer.parseInt(getDefaultProperty(property));
         }
     }
-    
+
     /**
      * Retrieve the value of the given property as a long.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the long value of the given property
@@ -463,7 +463,7 @@ public class PropertiesManager<T>
      * Retrieve the value of the given property as a long. If the current value
      * of the specified property cannot be converted to a long, the default
      * value will be retrieved.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the long value of the given property or the default value if the
@@ -482,10 +482,10 @@ public class PropertiesManager<T>
             return Long.parseLong(getDefaultProperty(property));
         }
     }
-    
+
     /**
      * Retrieve the value of the given property as a float.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the float value of the given property
@@ -501,7 +501,7 @@ public class PropertiesManager<T>
      * Retrieve the value of the given property as a float. If the current value
      * of the specified property cannot be converted to a float, the default
      * value will be retrieved.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the float value of the given property or the default value if the
@@ -520,10 +520,10 @@ public class PropertiesManager<T>
             return Float.parseFloat(getDefaultProperty(property));
         }
     }
-    
+
     /**
      * Retrieve the value of the given property as a double.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the double value of the given property
@@ -539,7 +539,7 @@ public class PropertiesManager<T>
      * Retrieve the value of the given property as a double. If the current
      * value of the specified property cannot be converted to a double, the
      * default value will be retrieved.
-     * 
+     *
      * @param property
      *            the property to retrieve
      * @return the double value of the given property or the default value if
@@ -558,7 +558,7 @@ public class PropertiesManager<T>
             return Double.parseDouble(getDefaultProperty(property));
         }
     }
-    
+
     /**
      * Retrieve the value of the given property as an Enum constant of the given
      * type.<br>
@@ -566,7 +566,7 @@ public class PropertiesManager<T>
      * Note that this method requires the Enum constants to all have upper case
      * names (following Java naming conventions). This allows for case
      * insensitivity in the properties file.
-     * 
+     *
      * @param <E>
      *            the type of Enum that will be returned
      * @param property
@@ -592,7 +592,7 @@ public class PropertiesManager<T>
      * Note that this method requires the Enum constants to all have upper case
      * names (following Java naming conventions). This allows for case
      * insensitivity in the properties file.
-     * 
+     *
      * @param <E>
      *            the type of Enum that will be returned
      * @param property
@@ -663,7 +663,7 @@ public class PropertiesManager<T>
      * <br>
      * Note that if {@link #isAutoTrim() auto trim} is enabled, this value will
      * be trimmed of whitespace.
-     * 
+     *
      * @param property
      *            the property whose default value is requested
      * @return the default raw value of the given property
@@ -717,7 +717,7 @@ public class PropertiesManager<T>
      * Retrieve the reference to another property from within the value of the
      * given property at the given position. If such a reference does not exist,
      * the result of this method will be <code>null</code>.
-     * 
+     *
      * @param property
      *            the property to search for the requested reference
      * @param position
@@ -729,7 +729,7 @@ public class PropertiesManager<T>
     {
         return getEvaluator().referenceAt(getRawProperty(property), position, getRetriever());
     }
-    
+
     /**
      * Load the current value of the given property from the file without
      * modifying the values of any other properties. In other words,
@@ -740,7 +740,7 @@ public class PropertiesManager<T>
      * <br>
      * This method will block and wait for the property to be loaded. See
      * {@link #loadPropertyNB(Object)} for a non-blocking version.
-     * 
+     *
      * @param property
      *            the property to load
      * @throws IOException
@@ -785,7 +785,7 @@ public class PropertiesManager<T>
      * <br>
      * This method will not block to wait for the property to be loaded. See
      * {@link #loadProperty(Object)} for a blocking version.
-     * 
+     *
      * @param property
      *            the property to save
      * @return a task representing this save request
@@ -956,7 +956,7 @@ public class PropertiesManager<T>
      * <br>
      * Please note that the Enum value saved here is case insensitive. See
      * {@link #getEnumProperty(Object, Class)} for additional details.
-     * 
+     *
      * @param <E>
      *            the type of Enum value to save
      * @param property
@@ -975,7 +975,7 @@ public class PropertiesManager<T>
     /**
      * Save the given property using an object's string representation. See
      * {@link #saveProperty(Object, String)} for additional details.
-     * 
+     *
      * @param property
      *            the property whose value is being saved
      * @param value
@@ -1001,7 +1001,7 @@ public class PropertiesManager<T>
      * atomic. In other words, it is possible that this call will modify the
      * value, another call will further change the value, and then the property
      * will be saved.
-     * 
+     *
      * @param property
      *            the property whose value is being saved
      * @param value
@@ -1026,7 +1026,7 @@ public class PropertiesManager<T>
      * <br>
      * This method will block and wait for the property to be saved. See
      * {@link #savePropertyNB(Object)} for a non-blocking version.
-     * 
+     *
      * @param property
      *            the property to save
      * @throws IOException
@@ -1071,7 +1071,7 @@ public class PropertiesManager<T>
      * <br>
      * This method will not block to wait for the property to be saved. See
      * {@link #saveProperty(Object)} for a blocking version.
-     * 
+     *
      * @param property
      *            the property to save
      * @return a task representing this save request
@@ -1169,7 +1169,7 @@ public class PropertiesManager<T>
 
         if (properties.resetToDefault(propertyName))
         {
-            firePropertyReset(property);            
+            firePropertyReset(property);
         }
     }
 
@@ -1181,11 +1181,11 @@ public class PropertiesManager<T>
         properties.resetToDefaults();
         firePropertiesReset();
     }
-    
+
     /**
      * Determine whether or not the given property has been modified since it
      * was last load or saved.
-     * 
+     *
      * @param property
      *            the property to check
      * @return <code>true</code> if this property has been modified since the
@@ -1195,11 +1195,11 @@ public class PropertiesManager<T>
     {
         return properties.isModified(getTranslator().getPropertyName(property));
     }
-    
+
     /**
      * Determine whether or not any property has been modified since the last
      * load or save.
-     * 
+     *
      * @return <code>true</code> if any property known to this instance has been
      *         modified since the last load or save; <code>false</code>
      *         otherwise
@@ -1244,7 +1244,7 @@ public class PropertiesManager<T>
 
     /**
      * Notify all listeners that a property has been loaded.
-     * 
+     *
      * @param property
      *            the property whose value has been loaded
      */
@@ -1262,7 +1262,7 @@ public class PropertiesManager<T>
             l.loaded(event);
         }
     }
-    
+
     /**
      * Notify all listeners that the properties have been loaded.
      */
@@ -1273,7 +1273,7 @@ public class PropertiesManager<T>
 
     /**
      * Notify all listeners that a property has been saved.
-     * 
+     *
      * @param property
      *            the property whose value has been saved
      */

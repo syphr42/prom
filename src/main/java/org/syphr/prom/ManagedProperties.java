@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * This class provides supporting API around {@link Properties} to allow easier
  * management of the properties within as they pertain to an actual file on the
  * file system and the lifecycle of load/modify/save.
- * 
+ *
  * @author Gregory P. Moyer
  */
 /* default */class ManagedProperties
@@ -66,7 +66,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
     /**
      * Construct a new managed instance.
-     * 
+     *
      * @param defaults
      *            the default values (note that these will be copied to a new
      *            object so that the caller cannot change the underlying
@@ -89,7 +89,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
     /**
      * Copy the given properties to a new object.
-     * 
+     *
      * @param source
      *            the source from which to copy
      * @return a copy of the source or <code>null</code> if the source is
@@ -114,7 +114,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      * changed and any properties that do not exist in the file or the defaults
      * will be removed. It also means that after this call completes,
      * {@link #isModified()} will return <code>false</code>.
-     * 
+     *
      * @param file
      *            the file containing the current property values (this file
      *            does not have to exist, in which case all defaults are
@@ -134,7 +134,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      * the property does not exist in the file or the defaults, it will be
      * removed. Also, after this call completes, {@link #isModified(String)}
      * will return <code>false</code> for this property.
-     * 
+     *
      * @param file
      *            the file containing the current property values (this file
      *            does not have to exist, in which case the default value is
@@ -220,7 +220,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
     /**
      * Save the current state of the properties within this instance to the
      * given file.
-     * 
+     *
      * @param file
      *            the file to which the current properties and their values will
      *            be written
@@ -242,7 +242,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
     /**
      * Save the current state of the given property to the given file without
      * saving all of the other properties within this instance.
-     * 
+     *
      * @param file
      *            the file to which the current properties and their values will
      *            be written
@@ -276,7 +276,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
                                       + parent.getAbsolutePath()
                                       + "\" does not exist and cannot be created");
             }
-            
+
             FileOutputStream outputStream = new FileOutputStream(file);
             try
             {
@@ -313,7 +313,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
     /**
      * Retrieve the value associated with the given property.
-     * 
+     *
      * @param propertyName
      *            the property whose value is requested
      * @return the value associated with the given property or <code>null</code>
@@ -332,7 +332,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
     /**
      * Set a new value for the given property.
-     * 
+     *
      * @param propertyName
      *            the property whose value will be set
      * @param value
@@ -350,7 +350,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
     /**
      * Push or sync the given value to the appropriate stack. This method will
      * create a new stack if this property has never had a value before.
-     * 
+     *
      * @param propertyName
      *            the property whose value will be set
      * @param value
@@ -391,7 +391,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
     /**
      * Get the default value for the given property.
-     * 
+     *
      * @param propertyName
      *            the property whose associated default value is requested
      * @return the default value for the given property or <code>null</code> if
@@ -404,7 +404,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
     /**
      * Reset the value associated with specified property to its default value.
-     * 
+     *
      * @param propertyName
      *            the property whose associated value should be reset
      * @return <code>true</code> if the value of the given property changed as a
@@ -470,7 +470,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
     /**
      * Determine whether or not the given property has been modified since it
      * was last load or saved.
-     * 
+     *
      * @param propertyName
      *            the property to check
      * @return <code>true</code> if this property has been modified since the
@@ -498,7 +498,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
     /**
      * Determine whether or not any property has been modified since the last
      * load or save.
-     * 
+     *
      * @return <code>true</code> if any property known to this instance has been
      *         modified since the last load or save; <code>false</code>
      *         otherwise
@@ -527,7 +527,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
     /**
      * Retrieve a set of property names currently in use by this instance. This
      * includes default and non-default properties.
-     * 
+     *
      * @return the set of property names currently in use
      */
     public Set<String> getPropertyNames()
@@ -542,14 +542,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      * Please note that the returned {@link Properties} object is not connected
      * in any way to this instance and is only a snapshot of what the properties
      * looked like at the time the request was fulfilled.
-     * 
+     *
      * @param includeDefaults
      *            if <code>true</code>, values that match the default will be
      *            stored directly in the properties map; otherwise values
      *            matching the default will only be available through the
      *            {@link Properties} concept of defaults (as a fallback and not
      *            written to the file system if this object is stored)
-     * 
+     *
      * @return a {@link Properties} instance containing the properties managed
      *         by this instance (including defaults as defined by the given
      *         flag)
@@ -570,7 +570,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      * Please note that the returned {@link Properties} object is not connected
      * in any way to this instance and is only a snapshot of what the properties
      * looked like at the time the request was fulfilled.
-     * 
+     *
      * @param includeDefaults
      *            if <code>true</code>, values that match the default will be
      *            stored directly in the properties map; otherwise values
@@ -581,7 +581,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      *            the name of the property whose current value should be
      *            provided while all others will be the last saved value (if
      *            this is <code>null</code>, all values will be current)
-     * 
+     *
      * @return a {@link Properties} instance containing the properties managed
      *         by this instance (including defaults as defined by the given
      *         flag)
@@ -623,7 +623,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
     /**
      * Retrieve the default property values used by this instance.
-     * 
+     *
      * @return a copy of this instance's default properties
      */
     public Properties getDefaults()
@@ -645,7 +645,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
      * threads may {@link #signIn()}. When a lock is requested, no other threads
      * requesting to {@link #signIn()} will be allowed until {@link #unlock()}
      * is issued.
-     * 
+     *
      * @author Gregory P. Moyer
      */
     private static class Gatekeeper

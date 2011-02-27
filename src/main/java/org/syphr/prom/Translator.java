@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ package org.syphr.prom;
  * between key constants (Enums) and property names.<br>
  * <br>
  * It is required that any implementation be thread safe.
- * 
+ *
  * @param <T>
  *            the type of objects used to defined the property keys
- * 
+ *
  * @author Gregory P. Moyer
  */
 public interface Translator<T>
@@ -33,10 +33,10 @@ public interface Translator<T>
      * used in the properties file. There is not likely to be a need for client
      * code to call this method directly. The {@link PropertiesManager} API will
      * take care of reading and writing the actual file.
-     * 
+     *
      * @param propertyKey
      *            the key object to be translated into a property name
-     * 
+     *
      * @return the name that represents this property in the properties file
      */
     public String getPropertyName(T propertyKey);
@@ -47,7 +47,7 @@ public interface Translator<T>
      * is not likely to be a need for client code to call this method directly.
      * The {@link PropertiesManager} API will take care of reading and writing
      * the actual file.
-     * 
+     *
      * @param propertyName
      *            the property name to be translated into an key object
      * @return the associated key object

@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class PropertiesManagerTest
 
     private PropertiesManager<Key1> test1Manager;
     private PropertiesManager<Key2> test2Manager;
-    
+
     private PropertyListener<Key1> monitor1;
     private PropertyListener<Key2> monitor2;
 
@@ -151,13 +151,13 @@ public class PropertiesManagerTest
                             test2Manager.getIntegerProperty(Key2.VALUE_INT),
                             Integer.parseInt(getTest2DefaultProperty(Key2.VALUE_INT)));
     }
-    
+
     @Test(expected=NumberFormatException.class)
     public void testGetIntegerPropertyFails()
     {
         test2Manager.getIntegerProperty(Key2.VALUE_NESTED);
     }
-    
+
     @Test
     public void testGetIntegerPropertyFallback()
     {
@@ -174,13 +174,13 @@ public class PropertiesManagerTest
                             test2Manager.getLongProperty(Key2.VALUE_LONG),
                             Long.parseLong(getTest2DefaultProperty(Key2.VALUE_LONG)));
     }
-    
+
     @Test(expected=NumberFormatException.class)
     public void testGetLongPropertyFails()
     {
         test2Manager.getLongProperty(Key2.VALUE_NESTED);
     }
-    
+
     @Test
     public void testGetLongPropertyFallback()
     {
@@ -204,7 +204,7 @@ public class PropertiesManagerTest
     {
         test2Manager.getFloatProperty(Key2.VALUE_NESTED);
     }
-    
+
     @Test
     public void testGetFloatPropertyFallback()
     {
@@ -223,13 +223,13 @@ public class PropertiesManagerTest
                             Double.parseDouble(getTest2DefaultProperty(Key2.VALUE_DOUBLE)),
                             FLOATING_POINT_DELTA);
     }
-    
+
     @Test(expected=NumberFormatException.class)
     public void testGetDoublePropertyFails()
     {
         test2Manager.getDoubleProperty(Key2.VALUE_NESTED);
     }
-    
+
     @Test
     public void testGetDoublePropertyFallback()
     {
@@ -247,13 +247,13 @@ public class PropertiesManagerTest
                             test2Manager.getEnumProperty(Key2.VALUE_ENUM, Color.class),
                             Color.valueOf(getTest2DefaultProperty(Key2.VALUE_ENUM).toUpperCase()));
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testGetEnumPropertyFails()
     {
         test2Manager.getEnumProperty(Key2.VALUE_NESTED, Color.class);
     }
-    
+
     @Test
     public void testGetEnumPropertyFallback()
     {
@@ -291,7 +291,7 @@ public class PropertiesManagerTest
                           test1Manager.keySet()
                                       .containsAll(EnumSet.allOf(Key1.class)));
     }
-    
+
     @Test
     public void testManagedPropertiesCached()
     {
@@ -299,7 +299,7 @@ public class PropertiesManagerTest
                           test1Manager.getPropertyManager(Key1.SOME_KEY),
                           test1Manager.getPropertyManager(Key1.SOME_KEY));
     }
-    
+
     @Test
     public void testSetPropertyString()
     {
@@ -320,7 +320,7 @@ public class PropertiesManagerTest
                             test1Manager.getEnumProperty(Key1.SOME_KEY,
                                                          Color.class));
     }
-    
+
     @Test
     public void testResetProperty()
     {
@@ -330,7 +330,7 @@ public class PropertiesManagerTest
                             Key1.SOME_KEY.getDefaultValue(),
                             test1Manager.getProperty(Key1.SOME_KEY));
     }
-    
+
     @Test
     public void testResetPropertyWithoutDefault()
     {
@@ -339,7 +339,7 @@ public class PropertiesManagerTest
         Assert.assertNull("Failed to remove an individual property without a default",
                           test2Manager.getProperty(Key2.VALUE_NO_DEFAULT));
     }
-    
+
     @Test
     public void testSetPropertyWithoutDefaultMarksModified()
     {
@@ -347,26 +347,26 @@ public class PropertiesManagerTest
         Assert.assertTrue("Setting a property without a default value was not recognized as a change",
                           test2Manager.isModified(Key2.VALUE_NO_DEFAULT));
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testEventSentWhenSetChangesValue()
     {
         monitor1.changed(EasyMock.isA(PropertyEvent.class));
         EasyMock.replay(monitor1);
-        
+
         test1Manager.setProperty(Key1.SOME_KEY, "some non-default value");
-        
+
         EasyMock.verify(monitor1);
     }
-    
+
     @Test
     public void testEventNotSentWhenSetDoesNotChangeValue()
     {
         EasyMock.replay(monitor1);
         test1Manager.setProperty(Key1.SOME_KEY, Key1.SOME_KEY.getDefaultValue());
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testEventSentWhenResetChangesValue()
@@ -374,20 +374,20 @@ public class PropertiesManagerTest
         monitor1.changed(EasyMock.isA(PropertyEvent.class));
         monitor1.reset(EasyMock.isA(PropertyEvent.class));
         EasyMock.replay(monitor1);
-        
+
         test1Manager.setProperty(Key1.SOME_KEY, "some non-default value");
         test1Manager.resetProperty(Key1.SOME_KEY);
-        
+
         EasyMock.verify(monitor1);
     }
-    
+
     @Test
     public void testEventNotSentWhenResetDoesNotChangeValue()
     {
         EasyMock.replay(monitor1);
         test1Manager.resetProperty(Key1.SOME_KEY);
     }
-    
+
     @Test
     public void testSavingDefaultsWithNoChanges() throws IOException
     {
@@ -395,13 +395,13 @@ public class PropertiesManagerTest
         PropertiesManager<Key1> prom = PropertiesManagers.newManager(file, Key1.class);
         prom.setSavingDefaults(true);
         prom.save();
-        
+
         Assert.assertEquals("After saving with defaults on and no modifications, written file should match default properties",
                             PropertiesManagers.getDefaultProperties(Key1.class,
                                                                     PropertiesManagers.getEnumTranslator(Key1.class)),
                             PropertiesManagers.getProperties(file));
     }
-    
+
     @Test
     public void testIsModified()
     {
@@ -433,7 +433,7 @@ public class PropertiesManagerTest
         Assert.assertTrue("Manager has been modified",
                           test1Manager.isModified(Key1.SOME_KEY));
     }
-    
+
     @Test
     public void testSavingClearsModified() throws IOException
     {
@@ -446,7 +446,7 @@ public class PropertiesManagerTest
         Assert.assertFalse("After save, no properties should be in a modified state",
                            prom.isModified());
     }
-    
+
     @Test
     public void testCopy()
     {
@@ -474,7 +474,7 @@ public class PropertiesManagerTest
     public void testLoadClearsAllModifications() throws IOException
     {
         test2Manager.load();
-        
+
         PropertiesManager<Key2> copy = test2Manager.copy(test2Manager.getFile());
         copy.setProperty(Key2.VALUE_STRING, "some non-default value");
         copy.setProperty(Key2.VALUE_NO_DEFAULT, "some value");
@@ -484,7 +484,7 @@ public class PropertiesManagerTest
                             test2Manager.getProperties(),
                             copy.getProperties());
     }
-    
+
     @Test
     public void testSavingPropertyDoesNotSaveAllProperties() throws Exception
     {
@@ -492,7 +492,7 @@ public class PropertiesManagerTest
                                                                   "SavingPropertyDoesNotSaveAllProperties.properties"));
         copy.setProperty(Key2.VALUE_NO_DEFAULT, "a value");
         copy.setProperty(Key2.VALUE_STRING, "a non-default value");
-        
+
         int value = 999999;
         copy.saveProperty(Key2.VALUE_INT, value);
 
@@ -516,7 +516,7 @@ public class PropertiesManagerTest
                                                copy.getProperty(Key2.VALUE_STRING),
                                                copy.getIntegerProperty(Key2.VALUE_INT) });
     }
-    
+
     @Test
     public void testLoadingPropertyDoesNotLoadAllProperties() throws IOException
     {
@@ -536,23 +536,23 @@ public class PropertiesManagerTest
                                    + " has been changed and saved",
                            test2Manager.isModified(Key2.VALUE_INT));
     }
-    
+
     @Test
     public void testLoadingPropertySendsCorrectEvent() throws IOException
     {
         Capture<PropertyEvent<Key2>> event = new Capture<PropertyEvent<Key2>>();
         monitor2.loaded(EasyMock.capture(event));
         EasyMock.replay(monitor2);
-        
+
         test2Manager.loadProperty(Key2.VALUE_BOOLEAN);
-        
+
         EasyMock.verify(monitor2);
-        
+
         Assert.assertEquals("The event should have specified the key that was loaded",
                             Key2.VALUE_BOOLEAN,
                             event.getValue().getProperty());
     }
-    
+
     @Test
     public void testWritingToADirThatDoesNotExist() throws IOException
     {
@@ -565,7 +565,7 @@ public class PropertiesManagerTest
     {
         SOME_KEY("some key's value!");
 
-        private String defaultValue;
+        private final String defaultValue;
 
         private Key1(String defaultValue)
         {

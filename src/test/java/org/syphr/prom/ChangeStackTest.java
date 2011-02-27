@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class ChangeStackTest
     {
         stack = new ChangeStack<String>(INITIAL_VALUE);
     }
-    
+
     @Test
     public void testInitialState()
     {

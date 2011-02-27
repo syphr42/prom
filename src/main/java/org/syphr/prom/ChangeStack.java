@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import java.util.List;
  * back and forth through the stack. It is naive in that it maintains references
  * to all of the values, not differences between them. However, it is suitable
  * for simple values, such as primitive wrappers or Strings.
- * 
+ *
  * @param <T>
  *            the type of element tracked by this stack
- * 
+ *
  * @author Gregory P. Moyer
  */
 /* default */class ChangeStack<T>
@@ -56,7 +56,7 @@ import java.util.List;
     /**
      * Create a new stack with the given initial value. This new stack will be
      * in a {@link #synced() synced}, {@link #isModified() unmodified} state.
-     * 
+     *
      * @param value
      *            the initial value of this stack
      */
@@ -67,7 +67,7 @@ import java.util.List;
 
     /**
      * Create a new stack with the given initial value.
-     * 
+     *
      * @param value
      *            the initial value of this stack
      * @param sync
@@ -80,7 +80,7 @@ import java.util.List;
     {
         stack = new ArrayList<T>();
         stack.add(value);
-        
+
         if (sync)
         {
             synced();
@@ -93,7 +93,7 @@ import java.util.List;
      * <br>
      * Note that this method will do nothing if the new value is the same as the
      * current value.
-     * 
+     *
      * @param value
      *            the new value to push
      * @return <code>true</code> if {@link #getCurrentValue()} changes as a
@@ -134,7 +134,7 @@ import java.util.List;
      * To put it another way, it is guaranteed that after this call
      * {@link #getCurrentValue()} will return the given value and
      * {@link #isModified()} will return <code>false</code>.
-     * 
+     *
      * @param value
      *            the new value to push
      * @return <code>true</code> if {@link #getCurrentValue()} changes as a
@@ -165,7 +165,7 @@ import java.util.List;
      * value. This method will return <code>true</code> if the two values are
      * equal, even if modifications have been made between the last synced value
      * and the current value.
-     * 
+     *
      * @return <code>true</code> if the {@link #getCurrentValue() current value}
      *         is equal to the {@link #getSyncedValue() last synced value};
      *         <code>false</code> otherwise
@@ -178,7 +178,7 @@ import java.util.List;
     /**
      * Retrieve the current value for the property to which this stack is
      * registered.
-     * 
+     *
      * @return the current value
      */
     public synchronized T getCurrentValue()
@@ -190,10 +190,10 @@ import java.util.List;
      * Retrieve the last synced value for the property to which this stack is
      * registered. If the value has never been synced, <code>null</code> will be
      * returned.
-     * 
+     *
      * @see #sync(Object)
      * @see #synced()
-     * 
+     *
      * @return the synced value or <code>null</code> if the stack has never been
      *         synced
      */
@@ -204,7 +204,7 @@ import java.util.List;
 
     /**
      * Determine whether or not {@link #undo()} can be called.
-     * 
+     *
      * @return <code>true</code> if there is at least one past value on the
      *         stack; <code>false</code> otherwise
      */
@@ -215,7 +215,7 @@ import java.util.List;
 
     /**
      * Determine whether or not {@link #redo()} can be called.
-     * 
+     *
      * @return <code>true</code> if there is at least one future value on the
      *         stack; <code>false</code> otherwise
      */
@@ -229,7 +229,7 @@ import java.util.List;
      * may be used until a new modification is made. If undo is not possible,
      * the {@link #getCurrentValue() current value} will be returned with no
      * change.
-     * 
+     *
      * @return the new {@link #getCurrentValue() current value}
      */
     public synchronized T undo()
@@ -247,7 +247,7 @@ import java.util.List;
      * one successful call to {@link #undo()} and before any new modifications
      * are made. If redo is not possible, the {@link #getCurrentValue() current
      * value} will be returned with no change.
-     * 
+     *
      * @return the new {@link #getCurrentValue() current value}
      */
     public synchronized T redo()

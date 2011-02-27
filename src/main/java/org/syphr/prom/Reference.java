@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * This class encapsulates a reference to another property from within a property's value.
- * For example, using an Ant-like {@link Evaluator}, a property may look like 
+ * For example, using an Ant-like {@link Evaluator}, a property may look like
  * <code>some.property = some value ${nested}</code> where <code>${nested}</code> is
  * the reference.
  *

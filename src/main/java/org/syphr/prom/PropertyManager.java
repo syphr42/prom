@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -182,7 +182,7 @@ public class PropertyManager<T>
     {
         return manager.getIntegerProperty(propertyKey);
     }
-    
+
     /**
      * @return delegate to
      *         {@link PropertiesManager#getIntegerPropertyFallback(Object)}
@@ -199,7 +199,7 @@ public class PropertyManager<T>
     {
         return manager.getLongProperty(propertyKey);
     }
-    
+
     /**
      * @return delegate to
      *         {@link PropertiesManager#getLongPropertyFallback(Object)}
@@ -216,7 +216,7 @@ public class PropertyManager<T>
     {
         return manager.getFloatProperty(propertyKey);
     }
-    
+
     /**
      * @return delegate to
      *         {@link PropertiesManager#getFloatPropertyFallback(Object)}
@@ -233,7 +233,7 @@ public class PropertyManager<T>
     {
         return manager.getDoubleProperty(propertyKey);
     }
-    
+
     /**
      * @return delegate to
      *         {@link PropertiesManager#getDoublePropertyFallback(Object)}
@@ -254,7 +254,7 @@ public class PropertyManager<T>
     {
         return manager.getEnumProperty(propertyKey, type);
     }
-    
+
     /**
      * @param <E>
      *            see delegate
@@ -295,10 +295,10 @@ public class PropertyManager<T>
     {
         return manager.referenceAt(propertyKey, position);
     }
-    
+
     /**
      * Delegate to {@link PropertiesManager#loadProperty(Object)}.
-     * 
+     *
      * @throws IOException
      *             see delegate
      */
@@ -309,7 +309,7 @@ public class PropertyManager<T>
 
     /**
      * Delegate to {@link PropertiesManager#loadPropertyNB(Object)}.
-     * 
+     *
      * @return see delegate
      */
     public Future<Void> loadPropertyNB()
@@ -392,10 +392,10 @@ public class PropertyManager<T>
     {
         manager.saveProperty(propertyKey, value);
     }
-    
+
     /**
      * Delegate to {@link PropertiesManager#saveProperty(Object)}.
-     * 
+     *
      * @throws IOException
      *             see delegate
      */
@@ -406,7 +406,7 @@ public class PropertyManager<T>
 
     /**
      * Delegate to {@link PropertiesManager#savePropertyNB(Object)}.
-     * 
+     *
      * @return see delegate
      */
     public Future<Void> savePropertyNB()
@@ -421,7 +421,7 @@ public class PropertyManager<T>
     {
         manager.resetProperty(propertyKey);
     }
-    
+
     /**
      * Delegate to {@link PropertiesManager#isModified(Object)}.
      */

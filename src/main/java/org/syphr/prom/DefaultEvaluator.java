@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class DefaultEvaluator implements Evaluator
         {
             return null;
         }
-        
+
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
@@ -61,7 +61,7 @@ public class DefaultEvaluator implements Evaluator
         {
             return null;
         }
-        
+
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
@@ -75,7 +75,7 @@ public class DefaultEvaluator implements Evaluator
         {
             return false;
         }
-        
+
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
@@ -99,7 +99,7 @@ public class DefaultEvaluator implements Evaluator
         {
             return Collections.emptyList();
         }
-        
+
         Evaluation eval = new Evaluation(rawValue, retriever);
         eval.parse();
 
@@ -172,9 +172,9 @@ public class DefaultEvaluator implements Evaluator
                  */
                 if (value == null)
                 {
-                   continue; 
+                   continue;
                 }
-                
+
                 Reference ref = new Reference(name,
                                               value,
                                               matcher.start(),
@@ -318,7 +318,7 @@ public class DefaultEvaluator implements Evaluator
         /**
          * The list wrapped by this instance.
          */
-        private List<T> list;
+        private final List<T> list;
 
         /**
          * A convenience method to construct a new instance without have to restate the
@@ -363,7 +363,7 @@ public class DefaultEvaluator implements Evaluator
         {
             return new Iterator<T>()
             {
-                private ListIterator<T> iterator = list.listIterator(list.size());
+                private final ListIterator<T> iterator = list.listIterator(list.size());
 
                 @Override
                 public boolean hasNext()

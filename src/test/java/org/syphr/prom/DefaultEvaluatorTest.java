@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,6 @@ import junit.framework.Assert;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.syphr.prom.DefaultEvaluator;
-import org.syphr.prom.Reference;
-import org.syphr.prom.Retriever;
 
 public class DefaultEvaluatorTest
 {
@@ -107,7 +104,7 @@ public class DefaultEvaluatorTest
                             EVAL_REC_VALUE_4,
                             computedEval);
     }
-    
+
     @Test
     public void testEvaluateWithInvalidReference()
     {

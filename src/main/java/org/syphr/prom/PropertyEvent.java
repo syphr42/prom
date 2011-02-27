@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Gregory P. Moyer
+ * Copyright 2010-2011 Gregory P. Moyer
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class PropertyEvent<T> extends EventObject
      * The property to which this event corresponds. For events concerning multiple
      * properties, this will be <code>null</code>.
      */
-    private T property;
+    private final T property;
 
     /**
      * Construct a new event.
