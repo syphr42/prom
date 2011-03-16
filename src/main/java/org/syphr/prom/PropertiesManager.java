@@ -52,12 +52,6 @@ public class PropertiesManager<T>
     private final ConcurrentMap<T, PropertyManager<T>> propertyManagerCache = new ConcurrentHashMap<T, PropertyManager<T>>();
 
     /**
-     * An object used to retrieve the raw, internal value of a given property. This is
-     * intended for use with the {@link #evaluator}.
-     */
-    private final Retriever retriever = createRetriever();
-
-    /**
      * The evaluator used to convert property references into fully evaluated property
      * values.
      */
@@ -83,6 +77,12 @@ public class PropertiesManager<T>
      * The properties instance with which this manager will interact.
      */
     private final ManagedProperties properties;
+
+    /**
+     * An object used to retrieve the raw, internal value of a given property. This is
+     * intended for use with the {@link #evaluator}.
+     */
+    private volatile Retriever retriever;
 
     /**
      * A flag that determines whether or not property values are automatically trimmed as
@@ -1239,6 +1239,17 @@ public class PropertiesManager<T>
      */
     protected Retriever getRetriever()
     {
+        if (retriever == null)
+        {
+            synchronized (Lock.CREATE_RETRIEVER)
+            {
+                if (retriever == null)
+                {
+                    retriever = createRetriever();
+                }
+            }
+        }
+
         return retriever;
     }
 
@@ -1348,5 +1359,16 @@ public class PropertiesManager<T>
     private void firePropertiesReset()
     {
         firePropertyReset(null);
+    }
+
+    /**
+     * An internal enum representing locking objects.
+     */
+    private enum Lock
+    {
+        /**
+         * A lock used to protect the creation of a new {@link Retriever}.
+         */
+        CREATE_RETRIEVER
     }
 }
