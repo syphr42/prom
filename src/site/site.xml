@@ -56,5 +56,7 @@
       <item name="Test Coverage Report" href="/cobertura/index.html"/>
 	  <item name="Javadoc" 			 	href="/apidocs/index.html"/>
     </menu>
+    
+    <menu ref="parent"/>
   </body>
 </project>
