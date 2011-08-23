@@ -34,6 +34,7 @@
     <menu name="Source Information">
       <item name="JDepend Report" 	 	href="/jdepend-report.html"/>
       <item name="FindBugs Report" 	 	href="/findbugs.html"/>
+      <item name="Clirr Report" 	 	href="/clirr-report.html"/>
       <item name="Test Coverage Report" href="/cobertura/index.html"/>
 	  <item name="Javadoc" 			 	href="/apidocs/index.html"/>
 	  <item name="Browsable Source" 	href="/xref/index.html"/>
