@@ -46,12 +46,11 @@
 		<url>https://bugs.launchpad.net/prom/</url>
 	</issueManagement>
 
-	<scm>
-		<connection>scm:bazaar:https://bazaar.launchpad.net/~syphr42/prom/trunk/</connection>
-		<url>https://code.launchpad.net/prom</url>
-		<developerConnection>scm:bazaar:bzr+ssh://bazaar.launchpad.net/~syphr42/prom/trunk/</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
+    <scm>
+        <url>https://github.com/syphr42/prom</url>
+        <connection>scm:git:git://github.com/syphr42/prom.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/syphr42/prom.git</developerConnection>
+    </scm>
 
 	<developers>
 		<developer>
