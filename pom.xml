@@ -25,7 +25,7 @@
 	<parent>
 		<groupId>org.syphr</groupId>
 		<artifactId>syphr-parent</artifactId>
-		<version>6-SNAPSHOT</version>
+		<version>6</version>
 	</parent>
 
 	<name>Prom</name>
