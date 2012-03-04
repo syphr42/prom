@@ -30,14 +30,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This class provides builder methods to construct {@link PropertiesManager
  * managers} with various options.
- *
+ * 
  * @author Gregory P. Moyer
  */
 public class PropertiesManagers
 {
     /**
-     * A list of executors created anonymously by this class. These will be shutdown
-     * properly when the JVM shuts down.
+     * A list of executors created anonymously by this class. These will be
+     * shutdown properly when the JVM shuts down.
      */
     private static final List<ExecutorService> AUTO_GENERATED_EXECUTORS = new ArrayList<ExecutorService>();
     static
@@ -57,10 +57,10 @@ public class PropertiesManagers
 
     /**
      * Build a new manager for the given properties file.
-     *
+     * 
      * @param <T>
      *            the type of key used for the new manager
-     *
+     * 
      * @param file
      *            the file system location of the properties represented by the
      *            new manager
@@ -69,56 +69,60 @@ public class PropertiesManagers
      *            represented by the new manager
      * @param keyType
      *            the enumeration of keys in the properties file
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
      * @return a new manager
      * @throws IOException
      *             if there is an error while reading the default properties
      */
     public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
                                                                       File defaultFile,
-                                                                      Class<T> keyType) throws IOException
+                                                                      Class<T> keyType,
+                                                                      final Retriever... retrievers) throws IOException
     {
-        return new PropertiesManager<T>(file,
-                                        getProperties(defaultFile),
-                                        getEnumTranslator(keyType),
-                                        new DefaultEvaluator(),
-                                        createExecutor());
+        return newManager(file, defaultFile, keyType, createExecutor(), retrievers);
     }
 
     /**
      * Build a new manager for the given properties file.
-     *
+     * 
      * @param <T>
      *            the type of key used for the new manager
-     *
+     * 
      * @param file
      *            the file system location of the properties represented by the
      *            new manager
      * @param defaultFile
-     *            a URL containing default values for the properties
-     *            represented by the new manager
+     *            a URL containing default values for the properties represented
+     *            by the new manager
      * @param keyType
      *            the enumeration of keys in the properties file
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
      * @return a new manager
      * @throws IOException
      *             if there is an error while reading the default properties
      */
     public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
                                                                       URL defaultFile,
-                                                                      Class<T> keyType) throws IOException
+                                                                      Class<T> keyType,
+                                                                      final Retriever... retrievers) throws IOException
     {
-        return new PropertiesManager<T>(file,
-                                        getProperties(defaultFile),
-                                        getEnumTranslator(keyType),
-                                        new DefaultEvaluator(),
-                                        createExecutor());
+        return newManager(file, defaultFile, keyType, createExecutor(), retrievers);
     }
 
     /**
      * Build a new manager for the given properties file.
-     *
+     * 
      * @param <T>
      *            the type of key used for the new manager
-     *
+     * 
      * @param file
      *            the file system location of the properties represented by the
      *            new manager
@@ -130,6 +134,11 @@ public class PropertiesManagers
      * @param executor
      *            a service to handle potentially long running tasks, such as
      *            interacting with the file system
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
      * @return a new manager
      * @throws IOException
      *             if there is an error while reading the default properties
@@ -137,32 +146,45 @@ public class PropertiesManagers
     public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
                                                                       File defaultFile,
                                                                       Class<T> keyType,
-                                                                      ExecutorService executor) throws IOException
+                                                                      ExecutorService executor,
+                                                                      final Retriever... retrievers) throws IOException
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
                                         getEnumTranslator(keyType),
                                         new DefaultEvaluator(),
-                                        executor);
+                                        executor)
+        {
+            @Override
+            protected Retriever createRetriever()
+            {
+                return new AddOnRetriever(true, super.createRetriever(), retrievers);
+            }
+        };
     }
 
     /**
      * Build a new manager for the given properties file.
-     *
+     * 
      * @param <T>
      *            the type of key used for the new manager
-     *
+     * 
      * @param file
      *            the file system location of the properties represented by the
      *            new manager
      * @param defaultFile
-     *            a URL containing default values for the properties
-     *            represented by the new manager
+     *            a URL containing default values for the properties represented
+     *            by the new manager
      * @param keyType
      *            the enumeration of keys in the properties file
      * @param executor
      *            a service to handle potentially long running tasks, such as
      *            interacting with the file system
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
      * @return a new manager
      * @throws IOException
      *             if there is an error while reading the default properties
@@ -170,75 +192,81 @@ public class PropertiesManagers
     public static <T extends Enum<T>> PropertiesManager<T> newManager(File file,
                                                                       URL defaultFile,
                                                                       Class<T> keyType,
-                                                                      ExecutorService executor) throws IOException
+                                                                      ExecutorService executor,
+                                                                      final Retriever... retrievers) throws IOException
     {
         return new PropertiesManager<T>(file,
                                         getProperties(defaultFile),
                                         getEnumTranslator(keyType),
                                         new DefaultEvaluator(),
-                                        executor);
+                                        executor)
+        {
+            @Override
+            protected Retriever createRetriever()
+            {
+                return new AddOnRetriever(true, super.createRetriever(), retrievers);
+            }
+        };
     }
 
     /**
      * Build a new manager for the given properties file.
-     *
+     * 
      * @param <T>
      *            the type of key used for the new manager
-     *
+     * 
      * @param file
      *            the file system location of the properties represented here
      * @param keyType
      *            the enumeration of keys in the properties file
-     * @return a new manager
-     */
-    public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
-                                                                                    Class<T> keyType)
-    {
-        Translator<T> translator = getEnumTranslator(keyType);
-
-        return new PropertiesManager<T>(file,
-                                        getDefaultProperties(keyType,
-                                                             translator),
-                                        translator,
-                                        new DefaultEvaluator(),
-                                        createExecutor());
-    }
-
-    /**
-     * Build a new manager for the given properties file.
-     *
-     * @param <T>
-     *            the type of key used for the new manager
-     *
-     * @param file
-     *            the file system location of the properties represented here
-     * @param keyType
-     *            the enumeration of keys in the properties file
-     * @param executor
-     *            a service to handle potentially long running tasks, such as
-     *            interacting with the file system
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
      * @return a new manager
      */
     public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
                                                                                     Class<T> keyType,
-                                                                                    ExecutorService executor)
+                                                                                    final Retriever... retrievers)
     {
-        Translator<T> translator = getEnumTranslator(keyType);
-
-        return new PropertiesManager<T>(file,
-                                        getDefaultProperties(keyType,
-                                                             translator),
-                                        translator,
-                                        new DefaultEvaluator(),
-                                        executor);
+        return newManager(file, keyType, createExecutor(), retrievers);
     }
 
     /**
      * Build a new manager for the given properties file.
-     *
+     * 
      * @param <T>
      *            the type of key used for the new manager
-     *
+     * 
+     * @param file
+     *            the file system location of the properties represented here
+     * @param keyType
+     *            the enumeration of keys in the properties file
+     * @param executor
+     *            a service to handle potentially long running tasks, such as
+     *            interacting with the file system
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
+     * @return a new manager
+     */
+    public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
+                                                                                    Class<T> keyType,
+                                                                                    ExecutorService executor,
+                                                                                    final Retriever... retrievers)
+    {
+        return newManager(file, keyType, getEnumTranslator(keyType), createExecutor(), retrievers);
+    }
+
+    /**
+     * Build a new manager for the given properties file.
+     * 
+     * @param <T>
+     *            the type of key used for the new manager
+     * 
      * @param file
      *            the file system location of the properties represented here
      * @param keyType
@@ -248,27 +276,39 @@ public class PropertiesManagers
      * @param executor
      *            a service to handle potentially long running tasks, such as
      *            interacting with the file system
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
      * @return a new manager
      */
     public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
                                                                                     Class<T> keyType,
                                                                                     Translator<T> translator,
-                                                                                    ExecutorService executor)
+                                                                                    ExecutorService executor,
+                                                                                    final Retriever... retrievers)
     {
         return new PropertiesManager<T>(file,
-                                        getDefaultProperties(keyType,
-                                                             translator),
+                                        getDefaultProperties(keyType, translator),
                                         translator,
                                         new DefaultEvaluator(),
-                                        executor);
+                                        executor)
+        {
+            @Override
+            protected Retriever createRetriever()
+            {
+                return new AddOnRetriever(true, super.createRetriever(), retrievers);
+            }
+        };
     }
 
     /**
      * Build a new manager for the given properties file.
-     *
+     * 
      * @param <T>
      *            the type of key used for the new manager
-     *
+     * 
      * @param file
      *            the file system location of the properties represented here
      * @param keyType
@@ -279,26 +319,38 @@ public class PropertiesManagers
      * @param executor
      *            a service to handle potentially long running tasks, such as
      *            interacting with the file system
+     * @param retrievers
+     *            a set of retrievers that will be used to resolve extra
+     *            property references (i.e. if a nested value reference is found
+     *            in a properties file and there is no property to match it, the
+     *            given retrievers will be used)
      * @return a new manager
      */
     public static <T extends Enum<T> & Defaultable> PropertiesManager<T> newManager(File file,
                                                                                     Class<T> keyType,
                                                                                     Evaluator evaluator,
-                                                                                    ExecutorService executor)
+                                                                                    ExecutorService executor,
+                                                                                    final Retriever... retrievers)
     {
         Translator<T> translator = getEnumTranslator(keyType);
 
         return new PropertiesManager<T>(file,
-                                        getDefaultProperties(keyType,
-                                                             translator),
+                                        getDefaultProperties(keyType, translator),
                                         translator,
                                         evaluator,
-                                        executor);
+                                        executor)
+        {
+            @Override
+            protected Retriever createRetriever()
+            {
+                return new AddOnRetriever(true, super.createRetriever(), retrievers);
+            }
+        };
     }
 
     /**
      * Load values from a file.
-     *
+     * 
      * @param file
      *            the file containing default values
      * @return a new properties instance loaded with values from the given file
@@ -312,7 +364,7 @@ public class PropertiesManagers
 
     /**
      * Load values from a URL.
-     *
+     * 
      * @param url
      *            the URL containing default values
      * @return a new properties instance loaded with values from the given URL
@@ -339,7 +391,7 @@ public class PropertiesManagers
     /**
      * Retrieve a {@link Properties} instance that contains all of the default
      * values defined for the given {@link Defaultable}.
-     *
+     * 
      * @param <T>
      *            the key type whose default values are requested
      * @param keyType
@@ -357,8 +409,7 @@ public class PropertiesManagers
 
         for (T key : keyType.getEnumConstants())
         {
-            defaults.setProperty(translator.getPropertyName(key),
-                                 key.getDefaultValue());
+            defaults.setProperty(translator.getPropertyName(key), key.getDefaultValue());
         }
 
         return defaults;
@@ -367,7 +418,7 @@ public class PropertiesManagers
     /**
      * Create a translator that returns the string that it is given (no
      * translation).
-     *
+     * 
      * @return the identity translator implementation
      */
     public static Translator<String> getIdentityTranslator()
@@ -391,7 +442,7 @@ public class PropertiesManagers
     /**
      * Get a simple translator to convert back and forth between Enums and
      * property names (keys).
-     *
+     * 
      * @param <T>
      *            the type of Enum representing the properties
      * @param enumType
@@ -418,8 +469,9 @@ public class PropertiesManagers
     }
 
     /**
-     * Create a new, default executor for use in a new {@link PropertiesManager}.
-     *
+     * Create a new, default executor for use in a new {@link PropertiesManager}
+     * .
+     * 
      * @return the newly created executor
      */
     private static ExecutorService createExecutor()
@@ -442,9 +494,10 @@ public class PropertiesManagers
     }
 
     /**
-     * This class is almost identical to the default thread factory in {@link Executors},
-     * except that the threads are marked as daemon so that they do not prevent JVM
-     * shutdown and the threads are named uniquely to this utility class.
+     * This class is almost identical to the default thread factory in
+     * {@link Executors}, except that the threads are marked as daemon so that
+     * they do not prevent JVM shutdown and the threads are named uniquely to
+     * this utility class.
      */
     private static class DaemonThreadFactory implements ThreadFactory
     {
@@ -458,8 +511,10 @@ public class PropertiesManagers
         {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-            namePrefix = PropertiesManagers.class.getSimpleName() + " Thread Pool "
-                         + POOL_NUMBER.getAndIncrement() + ", Thread ";
+            namePrefix = PropertiesManagers.class.getSimpleName()
+                    + " Thread Pool "
+                    + POOL_NUMBER.getAndIncrement()
+                    + ", Thread ";
         }
 
         @Override
@@ -476,6 +531,61 @@ public class PropertiesManagers
             }
 
             return t;
+        }
+    }
+
+    /**
+     * Retrieve values from optional additional retrievers before or after
+     * trying the base retriever. This is useful for allowing special property
+     * sets to be resolved within a properties file (such as Java system
+     * properties or Ant properties).
+     * 
+     * @see SystemPropertiesRetriever
+     */
+    private static class AddOnRetriever implements Retriever
+    {
+        private final boolean baseFirst;
+        private final Retriever base;
+        private final Retriever[] addons;
+
+        public AddOnRetriever(boolean baseFirst, Retriever base, Retriever... addons)
+        {
+            this.baseFirst = baseFirst;
+            this.base = base;
+            this.addons = addons;
+        }
+
+        @Override
+        public String retrieve(String name)
+        {
+            if (baseFirst)
+            {
+                String value = base.retrieve(name);
+                if (value != null)
+                {
+                    return value;
+                }
+            }
+
+            for (Retriever addon : addons)
+            {
+                String value = addon.retrieve(name);
+                if (value != null)
+                {
+                    return value;
+                }
+            }
+
+            if (!baseFirst)
+            {
+                String value = base.retrieve(name);
+                if (value != null)
+                {
+                    return value;
+                }
+            }
+
+            return null;
         }
     }
 }
