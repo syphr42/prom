@@ -470,11 +470,13 @@ public class PropertiesManagers
 
     /**
      * Create a new, default executor for use in a new {@link PropertiesManager}
-     * .
+     * . This executor uses cached, daemon threads so it will expand as
+     * necessary, but it will not block JVM shutdown. The executor will be
+     * automatically shutdown on JVM exit.
      * 
      * @return the newly created executor
      */
-    private static ExecutorService createExecutor()
+    public static ExecutorService createExecutor()
     {
         ExecutorService executor = Executors.newCachedThreadPool(new DaemonThreadFactory());
         AUTO_GENERATED_EXECUTORS.add(executor);
